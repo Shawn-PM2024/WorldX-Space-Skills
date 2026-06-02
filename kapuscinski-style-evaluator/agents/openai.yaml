@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kapuscinski Style Evaluator"
+  short_description: "Editorial critique for Kapuscinski-like nonfiction prose"
+  default_prompt: "Use $kapuscinski-style-evaluator to evaluate whether this nonfiction draft moves toward a Kapuscinski-like mode of observation and narration."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Practical PPT"
+  short_description: "从提纲生成高质量实用型 PPT 工作流"
+  default_prompt: "Use $practical-ppt to turn this outline into a polished practical presentation deck."
+policy:
+  allow_implicit_invocation: true

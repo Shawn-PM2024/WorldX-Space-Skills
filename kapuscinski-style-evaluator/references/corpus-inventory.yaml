@@ -1,0 +1,304 @@
+meta:
+  project: kapuscinski-style-evaluator
+  author: Ryszard Kapuscinski
+  purpose: >
+    Build a multilingual corpus inventory for a writing-coach-style evaluator
+    that judges whether a text resembles Kapuscinski's writing tendencies,
+    then explains why and offers revision advice without directly imitating
+    the author's style.
+  updated_at: 2026-04-07
+  policy:
+    acquisition_scope: legal_ebooks_and_user_owned_copies_only
+    no_unlicensed_downloads: true
+    note: >
+      This file records metadata and acquisition targets only. It does not
+      contain copyrighted full text.
+
+collection_plan:
+  tier_1_goal:
+    - Polish originals: at least 4 books
+    - English translations: at least 4 books
+    - Chinese translations: at least 2 books
+  tier_2_goal:
+    - One Romance-language track: Spanish or French or Italian, at least 2 books
+    - Supplementary prose/reportage titles to avoid overfitting to one tone
+  recommended_storage_layers:
+    - canonical_positive
+    - derived_positive
+    - critical_secondary
+    - negative_controls
+
+works:
+  - id: cesarz
+    original_title: Cesarz
+    english_title: The Emperor
+    chinese_title: 皇帝
+    priority: tier_1
+    role: canonical_positive
+    rationale:
+      - Court, power, ritual, irony, and political allegory are central to the Kapuscinski signature.
+      - Useful for measuring compression, indirectness, and moral distance.
+    source_status: partially_located
+    language_targets:
+      - code: pl
+        status: located
+        source_type: legal_ebook
+        vendor: Legimi
+        url: https://www.legimi.pl/ebook-cesarz-ryszard-kapuscinski%2Cb1157632.html
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/the-emperor-14
+      - code: zh-Hans
+        status: sample_only
+        source_type: ebook_sample
+        vendor: 当当云阅读
+        url: https://e.dangdang.com/touch/products/1900060269.html
+    notes:
+      - Chinese full ebook availability remains uncertain and may require paper-book fallback.
+
+  - id: szachinszach
+    original_title: Szachinszach
+    english_title: Shah of Shahs
+    chinese_title: null
+    priority: tier_1
+    role: canonical_positive
+    rationale:
+      - Strong test case for mosaic structure, political metaphor, and observational intensity.
+      - Helps distinguish reportorial detail from abstract essayistic summary.
+    source_status: located_in_core_languages
+    language_targets:
+      - code: pl
+        status: located
+        source_type: legal_ebook
+        vendor: Legimi
+        url: https://www.legimi.pl/ebook-szachinszach-ryszard-kapuscinski%2Cb1157636.html
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/shah-of-shahs-4
+      - code: it
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/it/it/ebook/shah-in-shah-1
+    notes:
+      - No stable Chinese ebook was confirmed in this pass.
+
+  - id: imperium
+    original_title: Imperium
+    english_title: Imperium
+    chinese_title: 帝国
+    priority: tier_1
+    role: canonical_positive
+    rationale:
+      - Essential for historical scale, geography, and civilizational framing.
+      - Useful for detecting long-range structural movement instead of scene-only lyricism.
+    source_status: located_in_translation_markets
+    language_targets:
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/imperium-6
+      - code: es
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/es/es/ebook/el-imperio
+      - code: zh-Hans
+        status: unconfirmed
+        source_type: unknown
+        vendor: null
+        url: null
+    notes:
+      - Polish ebook source should be added in the next sourcing pass if available.
+
+  - id: heban
+    original_title: Heban
+    english_title: The Shadow of the Sun
+    chinese_title: null
+    priority: tier_1
+    role: canonical_positive
+    rationale:
+      - Critical for Africa writing, scene building, atmosphere, and ethical witnessing.
+      - Helps prevent the evaluator from equating Kapuscinski with only imperial or courtly prose.
+    source_status: located_in_core_languages
+    language_targets:
+      - code: pl
+        status: located
+        source_type: legal_ebook
+        vendor: Legimi
+        url: https://www.legimi.pl/ebook-heban-ryszard-kapuscinski%2Cb1157620.html
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/the-shadow-of-the-sun-2
+      - code: es
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/es/es/ebook/ebano-4
+      - code: it
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/it/it/ebook/ebano-1
+
+  - id: podroze-z-herodotem
+    original_title: Podróże z Herodotem
+    english_title: Travels with Herodotus
+    chinese_title: 与希罗多德一起旅行
+    priority: tier_1
+    role: canonical_positive
+    rationale:
+      - Important for reflection, reading-with-travel, and the blend of inquiry with literary memory.
+      - A good boundary case between reportage, essay, and intellectual travel writing.
+    source_status: located_in_multiple_languages
+    language_targets:
+      - code: pl
+        status: located
+        source_type: legal_ebook
+        vendor: Legimi
+        url: https://www.legimi.pl/ebook-podroze-z-herodotem-ryszard-kapuscinski%2Cb1157634.html
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/travels-with-herodotus
+      - code: zh-Hans
+        status: located
+        source_type: legal_ebook
+        vendor: 当当云阅读
+        url: https://e.dangdang.com/products/1901369737.html
+      - code: es
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/es/es/ebook/viajes-con-herodoto-1
+      - code: it
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/it/it/ebook/in-viaggio-con-erodoto
+
+  - id: jeszcze-dzien-zycia
+    original_title: Jeszcze dzień życia
+    english_title: Another Day of Life
+    chinese_title: null
+    priority: tier_2
+    role: supplementary_positive
+    rationale:
+      - Useful for war-zone immediacy and first-person pressure.
+      - Good contrast against the more meditative and retrospective books.
+    source_status: english_located
+    language_targets:
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/another-day-of-life
+      - code: pl
+        status: to_verify
+        source_type: unknown
+        vendor: null
+        url: null
+
+  - id: wojna-futbolowa
+    original_title: Wojna futbolowa
+    english_title: The Soccer War
+    chinese_title: 足球战争
+    priority: tier_2
+    role: supplementary_positive
+    rationale:
+      - Adds shorter reportorial forms and broadens the corpus beyond the best-known long works.
+      - Helpful for segment-level style signals.
+    source_status: partially_located
+    language_targets:
+      - code: en
+        status: located
+        source_type: legal_ebook
+        vendor: Kobo
+        url: https://www.kobo.com/us/en/ebook/the-soccer-war
+      - code: zh-Hans
+        status: unconfirmed
+        source_type: unknown
+        vendor: null
+        url: null
+
+  - id: busz-po-polsku
+    original_title: Busz po polsku
+    english_title: null
+    chinese_title: null
+    priority: tier_2
+    role: polish_control
+    rationale:
+      - Adds a Polish-only control layer so the evaluator can learn from the native prose texture.
+      - Useful when cross-checking whether some signals come from translators rather than the author.
+    source_status: polish_located
+    language_targets:
+      - code: pl
+        status: located
+        source_type: legal_ebook
+        vendor: Legimi
+        url: https://www.legimi.pl/ebook-busz-po-polsku-ryszard-kapuscinski%2Cb1161855.html
+
+  - id: ten-eleven-time-zones
+    original_title: 十一个时区之旅：北国五十年
+    english_title: null
+    chinese_title: 十一个时区之旅：北国五十年
+    priority: tier_2
+    role: chinese_supporting
+    rationale:
+      - Chinese-accessible supporting text for early evaluator prompting and reviewer calibration.
+      - Should not replace the core cross-language canonical set.
+    source_status: chinese_located
+    language_targets:
+      - code: zh-Hans
+        status: located
+        source_type: legal_ebook
+        vendor: 当当云阅读
+        url: https://e.dangdang.com/touch/products/1901372401.html
+
+acquisition_queue:
+  immediate:
+    - cesarz.pl
+    - cesarz.en
+    - szachinszach.pl
+    - szachinszach.en
+    - imperium.en
+    - heban.pl
+    - heban.en
+    - podroze-z-herodotem.pl
+    - podroze-z-herodotem.en
+    - podroze-z-herodotem.zh-Hans
+  next_wave:
+    - another-day-of-life.en
+    - the-soccer-war.en
+    - heban.es
+    - podroze-z-herodotem.es
+    - szachinszach.it
+  fallback_paths:
+    - Buy paper editions and create a user-owned OCR workflow with manual correction.
+    - Add library scans only if the user has access and rights to process them.
+    - Keep sample-only Chinese editions out of the main training/reference set.
+
+annotation_notes:
+  why_multilingual: >
+    The evaluator should judge both Chinese and English user text, but the
+    reference corpus should include the Polish originals so we do not mistake a
+    translator's habits for the author's style.
+  what_not_to_do:
+    - Do not use this corpus to generate close imitations of copyrighted style.
+    - Do not treat one translated book as the whole style.
+    - Do not mix reviews, blurbs, and secondary criticism into canonical prose.
+  likely_future_fields:
+    - excerpt_rights_status
+    - local_file_path
+    - purchase_owner
+    - text_extraction_status
+    - normalization_status
+    - segmentation_status
