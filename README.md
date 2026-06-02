@@ -2,9 +2,7 @@
 
 **中文** | [English](#english)
 
-WorldX Space 维护的公开 AI Skills 合集。
-
-本仓库参考 `KKKKhazix/khazix-skills` 的多 skill 组织方式：每个 skill 都放在一个顶层目录中，可以单独安装、单独维护，也可以作为一个合集整体克隆。
+WorldX-Space号主 维护的个人 AI Skills 合集。
 
 ## Skills
 
