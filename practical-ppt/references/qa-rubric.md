@@ -19,6 +19,7 @@ Checks:
 - inspect screenshots/contact sheet at thumbnail and full size
 - run `scripts/check_html_slides.mjs` with the default 16px minimum and at least `--min-line-height 1`
 - run `scripts/check_pptx_text.py` on the final PPTX and treat any `review` result as blocking unless manually justified
+- run `scripts/check_pptx_structure.py` on the final PPTX for proof-object variety, visual rhythm, and dense-slide review
 - manually inspect text/background contrast because automated geometry checks may not catch white-on-white or low-contrast text
 - manually review slides with dense tables, timelines, org charts, and multi-column text
 
@@ -47,6 +48,8 @@ Blocking issues:
 - colors, shadows, border radii, icon styles, or diagram styles drift without chapter-level reason
 - imported images are blurry, stretched, darkened excessively, or visually unrelated
 - cover, section, body, and ending pages do not feel like the same deck
+- most body slides use the same table/card/list grammar, making the deck fail the contact-sheet rhythm test
+- substantial slides contain no recognizable proof object beyond text boxes
 - in `user-template` mode, the output either copies the template content too literally or fails to preserve the template's visual grammar
 
 Checks:
@@ -56,6 +59,7 @@ Checks:
 - in `user-template` mode, compare against `template-style-brief.md` and verify palette, typography scale, spacing, motif, density, and page rhythm were learned before generation
 - verify each slide has stable margins and alignment
 - confirm charts, tables, diagrams, and cards share a consistent grammar
+- confirm each substantial slide has a named proof object and that no more than 3 consecutive body slides share the same layout signature
 
 ## 4. Outline Match
 
@@ -103,4 +107,5 @@ Use this concise format in the final QA note:
 - Remaining assumptions: ...
 - HTML QA: report path + pass/review count
 - PPTX text QA: report path + pass/review count
+- PPTX structure QA: report path + pass/review count
 ```

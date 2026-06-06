@@ -23,6 +23,7 @@ Default to a complete deck with a cover slide and an ending slide, even when the
 
 - `style-library`: no user template is supplied. Select a template type from [references/style-library.md](references/style-library.md), then adapt it to the deck's topic and audience.
 - `参考用户模版` / `user-template`: the user supplies a PPTX/PDF/image/template deck as the style reference. Audit it before drawing any new slide, then adapt its visual grammar to the new topic.
+- `benchmark-compare`: the user supplies another deck for the same or similar input and asks why it is better/worse. Audit both decks before rebuilding, then write a gap brief.
 - If the user supplies a template-like PPTX and asks to use it as a reference, default to `user-template`.
 
 For `user-template` mode:
@@ -38,12 +39,21 @@ python3 scripts/audit_pptx_template.py reference-template.pptx --out template-au
 - Do not paste the user's template content into the new deck unless it is also source content. Learn style, not content.
 - Preserve editability. Recreate learned layouts with native PowerPoint text/shapes whenever possible.
 
+For `benchmark-compare` mode:
+
+- Run text QA and structure QA on both decks when files are available.
+- Compare narrative spine, proof-object choice, layout rhythm, visual assets, text density, readability, and editability.
+- Write `benchmark-gap-brief.md` before making a new version. Separate style gaps from story/proof-object gaps.
+- Use [references/proposal-proof-objects.md](references/proposal-proof-objects.md) for executive, strategy, shareholder, financing, and joint-venture decks.
+
 3. Build the slide plan.
 
 - Convert the outline into a slide list with one claim or job per slide.
 - Add `封面` and `结束页`.
 - Mark each slide as narrative, data/table, diagram/process, product/solution, case, comparison, or transition.
+- Choose one named proof object for each substantial slide before drawing: funnel, matrix, role swimlane, revenue stack, ownership donut, IP quadrant, timeline, checklist table, decision bridge, or another explicit object.
 - Create a small style brief naming: topic, audience, selected reference grammar, deliberate modifications, and what must not be copied.
+- Avoid more than 3 consecutive body slides with the same table/card/list layout. Vary the proof object shape so the contact sheet has visible rhythm.
 
 4. Draw the deck as a webpage.
 
@@ -53,6 +63,7 @@ python3 scripts/audit_pptx_template.py reference-template.pptx --out template-au
 - Set body/readable text at no less than 16px in HTML, which maps to roughly 12pt in PPT. Do not solve density problems by shrinking text below this threshold.
 - Set paragraph and label line-height to at least `1.0`; prefer `1.15`-`1.35` for body text and dense Chinese paragraphs.
 - Favor real layout systems: CSS grid, flex, SVG diagrams, tables, and chart libraries. Avoid decorative clutter that does not clarify the slide.
+- Build reusable visual assets as native/vector grammar: dot grids, thin rules, badges, stage labels, dividers, rings, chevrons, ladders, funnels, and schematic icons. Do not rely on flat card grids for every slide.
 - Check the HTML in a browser before export. The webpage is the visual source of truth.
 
 5. Build an editable PPTX.
@@ -76,6 +87,12 @@ node scripts/spec_to_editable_pptx.mjs deck-spec.json deck.pptx
 python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-on-review
 ```
 
+- Run structure QA on the final PPTX:
+
+```bash
+python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --fail-on-review
+```
+
 - Inspect a rendered contact sheet before delivery. Automated checks do not replace visual review.
 - Verify editability: PPTX should contain real text runs and editable shapes for normal content. Screenshots may be used only for non-editable illustrative media, not core slide text.
 - Use [references/qa-rubric.md](references/qa-rubric.md) as the blocking gate. Do not deliver if there are obvious overlap, overflow, style breakage, outline mismatch, or content-reasoning problems.
@@ -91,7 +108,8 @@ Every substantial slide needs:
 - a proof object: table, diagram, timeline, architecture, case, metric, quote, or structured comparison
 - controlled density: readable at presentation size and scannable at contact-sheet size
 - enough breathing room for native PPT rendering: text boxes should have vertical slack after line spacing is applied
+- distinct visual rhythm: the proof object should be recognizable at thumbnail size, not just as a block of text
 
 ## Outputs
 
-Return the final PPTX path, the HTML/source preview path if created, the slide-spec path when used, the HTML QA report path, and the PPTX text QA report path. Mention whether the deck used `strict-outline` or `expanded-content`, whether the PPTX is editable, and list any unresolved assumptions or missing source constraints.
+Return the final PPTX path, the HTML/source preview path if created, the slide-spec path when used, the HTML QA report path, the PPTX text QA report path, and the PPTX structure QA report path. Mention whether the deck used `strict-outline` or `expanded-content`, whether the PPTX is editable, and list any unresolved assumptions or missing source constraints.

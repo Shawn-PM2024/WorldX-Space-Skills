@@ -12,6 +12,7 @@ Template types are style grammar, not fixed layouts to clone. For every new deck
 - **Blue-White Corporate Tech**: light technology company style, glass panels, geometric motifs, structured contents, company/profile/product sections.
 - **Adaptive Business Modular**: topic-routed business template system, modular section rhythm, remixable layouts, strong narrative skeleton.
 - **Editable Diagram Grammar**: native-shape diagram system for list, process, cycle, hierarchy, relationship, matrix, pyramid, and picture/timeline diagrams.
+- **Executive Proposal System**: board/shareholder proposal style, proof-object-first slides, premium sparse cover, strong decision narrative, native visual assets.
 
 ## Reusable Style Families
 
@@ -75,6 +76,19 @@ Diagram adaptation rules:
 - For 5+ steps, prefer a timeline, chevron row, or vertical ladder over equal-width cards.
 - For 6+ peer items, group into clusters or use a matrix instead of a flat card grid.
 - For dense diagrams, split into two slides if labels drop below readable size.
+
+### Executive Proposal System
+
+Use for joint ventures, financing proposals, shareholder communication, board decisions, strategic cooperation, restructuring, and platform-company plans.
+
+- Background: mostly white or very light neutral with one deep text color and one confident accent.
+- Palette: charcoal/navy text, green/blue accent, pale panels, restrained warning color for risk or decision contrast.
+- Typography: large proposal title, compact eyebrow labels, body text no smaller than 12pt after export.
+- Layouts: premium sparse cover, core conclusion strip, contribution map, business-scope value chain, commercial funnel, IP quadrant, ownership donut, option comparison, revenue stack, role swimlane, milestone timeline, agreement checklist, talking-point cards.
+- Details: dot grids, thin rules, section labels, numbered badges, recommendation stamps, small native icons, ring charts, and line dividers.
+- Rhythm: do not use equal card grids on every slide. Alternate table, matrix, funnel, timeline, ring, and swimlane pages.
+
+For this type, read [proposal-proof-objects.md](proposal-proof-objects.md) before drawing. The deck should look like a decision document, not a decorative company brochure.
 
 ### Blue-White Corporate Tech
 

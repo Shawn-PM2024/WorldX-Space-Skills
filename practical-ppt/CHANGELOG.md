@@ -2,6 +2,13 @@
 
 All notable changes to Practical PPT are documented here.
 
+## 1.0.2 - 2026-06-06
+
+- Added benchmark comparison mode for auditing another deck generated from the same or similar input.
+- Added executive proposal proof-object guidance for joint venture, shareholder, financing, board, and strategy decks.
+- Added PPTX structure QA for slide density, proof-object variety, repeated layout signatures, and contact-sheet rhythm.
+- Added an Executive Proposal System style family with native visual asset grammar.
+
 ## 1.0.1 - 2026-06-06
 
 - Raised the default HTML QA minimum text size to 16px, matching the 12pt PPT readability floor.
