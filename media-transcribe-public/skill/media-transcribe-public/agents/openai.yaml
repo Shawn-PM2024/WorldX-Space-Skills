@@ -1,0 +1,4 @@
+interface:
+  display_name: "Media Transcribe Public"
+  short_description: "Transcribe media to Markdown with local-first storage backends."
+  default_prompt: "Transcribe this audio or video file and save the Markdown note using the configured backend."
