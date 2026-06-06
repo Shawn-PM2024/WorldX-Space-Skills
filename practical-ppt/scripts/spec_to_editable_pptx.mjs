@@ -39,21 +39,32 @@ function normalizeMargin(value) {
   return Number(value) || 0;
 }
 
+function normalizeFontSize(value, fallback = 18) {
+  const fontSize = Number(value ?? fallback) || fallback;
+  return Math.max(12, fontSize);
+}
+
 function withTheme(defaults, theme, style = {}) {
-  return {
+  const opts = {
     fontFace: theme.fontFace || "Aptos",
     color: cleanColor(style.color, cleanColor(defaults.color, "111111")),
-    fontSize: style.fontSize ?? defaults.fontSize ?? 18,
+    fontSize: normalizeFontSize(style.fontSize, defaults.fontSize ?? 18),
     bold: style.bold ?? defaults.bold ?? false,
     italic: style.italic ?? false,
     breakLine: style.breakLine ?? false,
     margin: normalizeMargin(style.margin ?? defaults.margin ?? 0),
-    fit: style.fit ?? "shrink",
+    fit: style.fit ?? "none",
     valign: style.valign ?? "top",
     align: style.align ?? "left",
     breakLineOnHyphen: false,
-    paraSpaceAfterPt: style.paraSpaceAfterPt ?? 0,
     breakLineOnSpace: false,
+    paraSpaceAfter: style.paraSpaceAfter ?? 0,
+    paraSpaceBefore: style.paraSpaceBefore ?? 0,
+  };
+  if (style.lineSpacing) opts.lineSpacing = style.lineSpacing;
+  else opts.lineSpacingMultiple = Math.max(1, style.lineSpacingMultiple ?? defaults.lineSpacingMultiple ?? 1);
+  return {
+    ...opts,
   };
 }
 
@@ -212,25 +223,27 @@ for (const [index, slideSpec] of spec.slides.entries()) {
         x: footer.x ?? 0.45,
         y: footer.y ?? 7.12,
         w: footer.w ?? 3,
-        h: footer.h ?? 0.16,
+        h: footer.h ?? 0.24,
         fontFace: theme.fontFace,
-        fontSize: footer.fontSize ?? 6.5,
+        fontSize: normalizeFontSize(footer.fontSize, 12),
         color: cleanColor(footer.color, theme.muted),
         margin: 0,
-        fit: "shrink",
+        fit: "none",
+        lineSpacingMultiple: 1,
       });
     }
     slide.addText(String(index + 1).padStart(2, "0"), {
       x: footer.pageX ?? 12.35,
       y: footer.pageY ?? 7.12,
       w: 0.38,
-      h: 0.16,
+      h: footer.pageH ?? 0.24,
       fontFace: theme.fontFace,
-      fontSize: footer.fontSize ?? 6.5,
+      fontSize: normalizeFontSize(footer.fontSize, 12),
       color: cleanColor(footer.color, theme.muted),
       margin: 0,
       align: "right",
-      fit: "shrink",
+      fit: "none",
+      lineSpacingMultiple: 1,
     });
   }
 }

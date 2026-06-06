@@ -2,6 +2,14 @@
 
 All notable changes to Practical PPT are documented here.
 
+## 1.0.1 - 2026-06-06
+
+- Raised the default HTML QA minimum text size to 16px, matching the 12pt PPT readability floor.
+- Added line-height QA for HTML slides with a default minimum of single spacing.
+- Added final PPTX text QA for font sizes below 12pt, missing or below-single line spacing, estimated text overflow, out-of-bounds text boxes, and likely text box overlaps.
+- Updated editable PPTX export to avoid auto-shrinking text below readability thresholds and to set at least single line spacing.
+- Tightened the skill workflow and QA rubric so dense slides must be split, shortened, or relaid out instead of shrinking text.
+
 ## 1.0.0 - 2026-05-31
 
 Initial public release.

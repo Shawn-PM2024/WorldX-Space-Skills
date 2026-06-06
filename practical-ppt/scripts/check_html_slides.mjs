@@ -23,7 +23,9 @@ function parseArgs(argv) {
     width: 1600,
     height: 900,
     output: "qa-report.json",
-    minTextPx: 18,
+    minTextPx: 16,
+    minLineHeight: 1,
+    allowSmallChrome: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
@@ -32,6 +34,8 @@ function parseArgs(argv) {
     else if (token === "--height") args.height = Number(argv[++i]);
     else if (token === "--output") args.output = argv[++i];
     else if (token === "--min-text-px") args.minTextPx = Number(argv[++i]);
+    else if (token === "--min-line-height") args.minLineHeight = Number(argv[++i]);
+    else if (token === "--allow-small-chrome") args.allowSmallChrome = true;
     else if (token === "--help" || token === "-h") args.help = true;
     else args._.push(token);
   }
@@ -42,7 +46,9 @@ function usage() {
   return [
     "Usage: check_html_slides.mjs <input.html|url> [--output qa-report.json] [--selector .slide]",
     "",
-    "Checks slide HTML for text overflow, overlaps, out-of-bounds elements, and font-size issues.",
+    "Checks slide HTML for text overflow, overlaps, out-of-bounds elements, font-size issues, and line-height issues.",
+    "",
+    "Default --min-text-px is 16px, roughly equivalent to 12pt in PPT.",
   ].join("\n");
 }
 
@@ -129,6 +135,7 @@ try {
             tag: el.tagName.toLowerCase(),
             text: text.slice(0, 80),
             fontSize: Number.parseFloat(style.fontSize) || 0,
+            lineHeight: style.lineHeight === "normal" ? 0 : Number.parseFloat(style.lineHeight) || 0,
             left: rect.left - slideRect.left,
             top: rect.top - slideRect.top,
             right: rect.right - slideRect.left,
@@ -155,7 +162,12 @@ try {
     );
     const tooSmall = data.elements.filter((el) => {
       const likelyChrome = el.text.length <= 3 || el.top < 90 || el.bottom > data.height - 45;
-      return el.fontSize > 0 && el.fontSize < args.minTextPx && !likelyChrome;
+      return el.fontSize > 0 && el.fontSize < args.minTextPx && !(args.allowSmallChrome && likelyChrome);
+    });
+    const badLineHeight = data.elements.filter((el) => {
+      if (!el.lineHeight || !el.fontSize) return false;
+      const ratio = el.lineHeight / el.fontSize;
+      return ratio + 0.01 < args.minLineHeight;
     });
     const fontSizes = [...new Set(data.elements.map((el) => Math.round(el.fontSize)).filter(Boolean))].sort((a, b) => a - b);
     const overlaps = [];
@@ -182,6 +194,7 @@ try {
     if (overflow.length) issues.push(`${overflow.length} text elements overflow their boxes`);
     if (outOfBounds.length) issues.push(`${outOfBounds.length} text elements are outside the slide`);
     if (tooSmall.length) issues.push(`${tooSmall.length} text elements are below ${args.minTextPx}px`);
+    if (badLineHeight.length) issues.push(`${badLineHeight.length} text elements have line-height below ${args.minLineHeight}x`);
     if (fontSizes.length > 9) issues.push(`many font sizes detected: ${fontSizes.join(", ")}`);
     if (overlaps.length) issues.push(`${overlaps.length} likely text overlaps`);
 
@@ -195,6 +208,7 @@ try {
         overflow: overflow.slice(0, 8),
         outOfBounds: outOfBounds.slice(0, 8),
         tooSmall: tooSmall.slice(0, 8),
+        badLineHeight: badLineHeight.slice(0, 8),
         overlaps: overlaps.slice(0, 8),
         fontSizes,
       },

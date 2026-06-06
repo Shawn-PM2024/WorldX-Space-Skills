@@ -50,6 +50,8 @@ python3 scripts/audit_pptx_template.py reference-template.pptx --out template-au
 - Use a 16:9 slide canvas by default: `.slide { width: 1600px; height: 900px; }`.
 - Put each slide in one `.slide` element. Use semantic headings (`h1`, `h2`) and stable data attributes where useful.
 - Keep all reusable theme values in CSS variables: background, text, accent, muted text, border, panel, grid, and chart colors.
+- Set body/readable text at no less than 16px in HTML, which maps to roughly 12pt in PPT. Do not solve density problems by shrinking text below this threshold.
+- Set paragraph and label line-height to at least `1.0`; prefer `1.15`-`1.35` for body text and dense Chinese paragraphs.
 - Favor real layout systems: CSS grid, flex, SVG diagrams, tables, and chart libraries. Avoid decorative clutter that does not clarify the slide.
 - Check the HTML in a browser before export. The webpage is the visual source of truth.
 
@@ -63,10 +65,17 @@ node scripts/spec_to_editable_pptx.mjs deck-spec.json deck.pptx
 
 - Use `scripts/html_to_pptx.mjs` only for preview, raster backup, or when the user explicitly accepts image-backed PPTX. Never present image-backed export as the primary editable deliverable.
 - If a slide needs visual detail that the spec script cannot express, use the Presentations/artifact-tool workflow or pptxgenjs directly to create editable objects rather than embedding a screenshot.
+- In editable exports, normal text must be at least 12pt and line spacing must be at least single. When content does not fit, split the slide, shorten copy, enlarge the container, or change the layout. Do not use PowerPoint auto-shrink as a final fix.
 
 6. Run PPT checks and revise.
 
-- Run `scripts/check_html_slides.mjs` on the HTML source before final export.
+- Run `scripts/check_html_slides.mjs` on the HTML source before final export. The default minimum is 16px; do not lower it unless the user explicitly accepts smaller text.
+- Run `scripts/check_pptx_text.py` on the final PPTX:
+
+```bash
+python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-on-review
+```
+
 - Inspect a rendered contact sheet before delivery. Automated checks do not replace visual review.
 - Verify editability: PPTX should contain real text runs and editable shapes for normal content. Screenshots may be used only for non-editable illustrative media, not core slide text.
 - Use [references/qa-rubric.md](references/qa-rubric.md) as the blocking gate. Do not deliver if there are obvious overlap, overflow, style breakage, outline mismatch, or content-reasoning problems.
@@ -81,7 +90,8 @@ Every substantial slide needs:
 - a slide-level claim or task
 - a proof object: table, diagram, timeline, architecture, case, metric, quote, or structured comparison
 - controlled density: readable at presentation size and scannable at contact-sheet size
+- enough breathing room for native PPT rendering: text boxes should have vertical slack after line spacing is applied
 
 ## Outputs
 
-Return the final PPTX path, the HTML/source preview path if created, the slide-spec path when used, and the QA report path. Mention whether the deck used `strict-outline` or `expanded-content`, whether the PPTX is editable, and list any unresolved assumptions or missing source constraints.
+Return the final PPTX path, the HTML/source preview path if created, the slide-spec path when used, the HTML QA report path, and the PPTX text QA report path. Mention whether the deck used `strict-outline` or `expanded-content`, whether the PPTX is editable, and list any unresolved assumptions or missing source constraints.

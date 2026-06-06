@@ -2,7 +2,7 @@
 
 Practical PPT 是一个 Codex skill，用于将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿。
 
-当前版本：`1.0.0`
+当前版本：`1.0.1`
 
 English version: [English](#english)
 
@@ -41,8 +41,7 @@ English version: [English](#english)
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/Shawn-PM2024/WorldX-Space-Skills.git /tmp/WorldX-Space-Skills
-cp -R /tmp/WorldX-Space-Skills/practical-ppt ~/.codex/skills/practical-ppt
+git clone https://github.com/Shawn-PM2024/practical-ppt.git ~/.codex/skills/practical-ppt
 ```
 
 之后在 Codex 中要求使用 `practical-ppt` 将提纲转换为 PPT。
@@ -74,7 +73,13 @@ node scripts/spec_to_editable_pptx.mjs deck-spec.json deck.pptx
 导出前检查 HTML slides：
 
 ```bash
-node scripts/check_html_slides.mjs deck.html --output qa-report.json --min-text-px 12
+node scripts/check_html_slides.mjs deck.html --output qa-report.json --min-text-px 16
+```
+
+检查最终 PPTX 的文字可读性：
+
+```bash
+python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-on-review
 ```
 
 仅在明确接受非完全可编辑备份时，生成图片型 PPTX：
@@ -90,13 +95,14 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 交付前应完成：
 
 - HTML slide QA，没有阻塞性布局问题。
+- PPTX text QA，没有 12pt 以下字号、缺失/低于单倍行距、估算溢出、越界或疑似重叠问题。
 - 缩略图总览人工检查。
 - PPTX 可编辑性检查，确认存在真实文本节点和可编辑图形。
 - 根据 `references/qa-rubric.md` 做样式和内容审查。
 
 ### 版本管理
 
-本仓库使用语义化版本。当前发布版本为 `v1.0.0`。
+本仓库使用语义化版本。当前发布版本为 `1.0.1`。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -104,7 +110,7 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 Practical PPT is a Codex skill for creating polished, readable, editable PowerPoint decks from outlines, markdown drafts, and structured notes.
 
-Current version: `1.0.0`
+Current version: `1.0.1`
 
 ### What It Does
 
@@ -139,8 +145,7 @@ Clone this repository into your Codex skills directory:
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/Shawn-PM2024/WorldX-Space-Skills.git /tmp/WorldX-Space-Skills
-cp -R /tmp/WorldX-Space-Skills/practical-ppt ~/.codex/skills/practical-ppt
+git clone https://github.com/Shawn-PM2024/practical-ppt.git ~/.codex/skills/practical-ppt
 ```
 
 Then ask Codex to use `practical-ppt` when converting an outline into a deck.
@@ -172,7 +177,13 @@ node scripts/spec_to_editable_pptx.mjs deck-spec.json deck.pptx
 Check HTML slides before export:
 
 ```bash
-node scripts/check_html_slides.mjs deck.html --output qa-report.json --min-text-px 12
+node scripts/check_html_slides.mjs deck.html --output qa-report.json --min-text-px 16
+```
+
+Check final PPTX text readability:
+
+```bash
+python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-on-review
 ```
 
 Create an image-backed PPTX only when explicitly acceptable:
@@ -188,12 +199,13 @@ The default deliverable should be editable. Normal slide text and core diagrams 
 Before delivery, Practical PPT expects:
 
 - HTML slide QA with no blocking layout issues.
+- PPTX text QA with no text below 12pt, missing or below-single line spacing, estimated overflow, out-of-bounds text, or likely overlaps.
 - Visual contact sheet inspection.
 - PPTX editability check for real text runs and editable shapes.
 - A style/content review against `references/qa-rubric.md`.
 
 ### Versioning
 
-This repository uses semantic versioning. The current release is `v1.0.0`.
+This repository uses semantic versioning. The current release is `1.0.1`.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.

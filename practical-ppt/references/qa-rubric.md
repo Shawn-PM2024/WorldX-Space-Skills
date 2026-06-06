@@ -7,16 +7,18 @@ Run this rubric after the HTML deck exists and again after PPTX export.
 Blocking issues:
 
 - text overlaps other text, charts, images, page chrome, or slide edges
-- body text is too small for presentation use; default minimum is 18px in HTML or roughly 10-12pt in PPT
+- any normal PPT text is below 12pt; in HTML this maps to a default minimum of 16px on a 1600x900 slide canvas
 - font-size hierarchy is incoherent: body copy larger than headings, many unrelated sizes, or abrupt jumps without purpose
-- line-height causes clipping, cropped descenders, or unreadable paragraphs
+- line-height is below single spacing, missing on multi-line PPT text boxes, causes clipping, crops descenders, or makes Chinese paragraphs unreadable
 - long Chinese/English words overflow buttons, labels, cards, tables, or diagram nodes
+- text exceeds its card, table cell, diagram node, callout, or style frame after export to PPTX
 - text has insufficient contrast against its actual background, including callouts, dark covers, pale cards, and transparent overlays
 
 Checks:
 
 - inspect screenshots/contact sheet at thumbnail and full size
-- run `scripts/check_html_slides.mjs`
+- run `scripts/check_html_slides.mjs` with the default 16px minimum and at least `--min-line-height 1`
+- run `scripts/check_pptx_text.py` on the final PPTX and treat any `review` result as blocking unless manually justified
 - manually inspect text/background contrast because automated geometry checks may not catch white-on-white or low-contrast text
 - manually review slides with dense tables, timelines, org charts, and multi-column text
 
@@ -33,6 +35,7 @@ Checks:
 
 - inspect the PPTX in PowerPoint/Keynote when available
 - run an XML check: unzip the PPTX and confirm slide XML contains expected text
+- run `scripts/check_pptx_text.py deck.pptx --fail-on-review` to catch font sizes below 12pt, missing or below-single line spacing, estimated text overflow, out-of-bounds text boxes, and likely text box overlaps
 - treat image-backed PPTX as preview/backup only unless the user explicitly requested visual-only export
 
 ## 3. Style Integrity
@@ -98,4 +101,6 @@ Use this concise format in the final QA note:
 - Content reasonableness: pass / issues found
 - Fixes made: ...
 - Remaining assumptions: ...
+- HTML QA: report path + pass/review count
+- PPTX text QA: report path + pass/review count
 ```
