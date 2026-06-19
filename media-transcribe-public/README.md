@@ -4,7 +4,7 @@
 
 `media-transcribe-public` 是一个本地优先的音视频转写开源项目，同时内置 Codex skill。它把本地或 URL 音视频转成 Markdown 笔记，默认使用本机 `ffmpeg` + `whisper-cli`，并把远程转写、说话人模型和第三方笔记发布都设计为显式可选能力。
 
-当前版本：`1.0.0`
+当前版本：`1.0.1`
 
 ## 功能
 
@@ -15,6 +15,46 @@
 - 生成 Codex 可继续整理的 Markdown：标题、整理时间、核心观点占位、金句占位、清洗后全文和元信息。
 - 根据 ASR segment 时间和文本 cue 做基础标点推断：句内停顿用逗号，完整句或问句才换行。
 - 支持发布后端：本地 Markdown、Obsidian vault、Youdao 兼容后端、仅缓存不发布。
+
+## 适合场景
+
+- 播客、访谈、会议录音、课程录音、视频素材的长文本转写。
+- 需要先得到完整转写，再由 Codex 生成核心观点、金句和整理后全文的工作流。
+- 希望默认本地运行，只在明确选择时才使用 OpenAI、pyannote、Youdao 等外部服务的用户。
+- 需要把输出落到 Obsidian vault 或本地 Markdown 文件夹的知识管理场景。
+
+## 输入与输出
+
+输入：
+
+- 本地音频或视频文件。
+- HTTP(S) 媒体 URL。
+- 可选标题、语言、说话人数、模型路径、发布后端。
+
+输出：
+
+- `transcript.txt`：原始转写文本。
+- `segments.json`：带时间戳的 ASR segments。
+- `speaker_transcript.txt`：说话人感知的全文草稿。
+- `note.md`：Codex-ready Markdown 笔记。
+- 可选发布结果：本地 Markdown、Obsidian 文件或 Youdao note payload。
+
+## 典型提示词
+
+```text
+使用 media-transcribe-public，把这个播客音频转写成 Markdown，先保存到本地 notes 目录，不要上传远程服务。
+```
+
+```text
+使用 media-transcribe-public 转写这段访谈，区分 2-3 个说话人，输出到 Obsidian 的 Transcripts 文件夹。
+```
+
+## 常见失败
+
+- 直接发布第一版 `note.md`：它通常还包含 `核心观点`、`金句` 占位符。
+- 把 CLI 的断句当作最终文本：CLI 只做草稿标点，Codex 仍需要做最终整理。
+- 默认启用远程服务：OpenAI、pyannote、Youdao 都必须由用户显式选择。
+- 没有确认缓存：复测断句、模型或说话人逻辑时应使用 `--force` 或新缓存目录。
 
 ## 仓库结构
 
@@ -28,7 +68,8 @@ media-transcribe-public/
 ├── skill/
 │   └── media-transcribe-public/
 │       ├── SKILL.md
-│       └── agents/openai.yaml
+│       ├── agents/openai.yaml
+│       └── references/gotchas.md
 ├── src/
 │   └── media_transcribe_public/
 │       ├── __init__.py
@@ -213,9 +254,9 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 ## 版本
 
-当前版本：`1.0.0`
+当前版本：`1.0.1`
 
-发布 tag：`media_transcribe_public-1.0.0`
+发布 tag：`media_transcribe_public-1.0.1`
 
 ---
 
@@ -223,7 +264,7 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 `media-transcribe-public` is a local-first open-source audio/video transcription project with a bundled Codex skill. It turns local files or HTTP(S) media URLs into Markdown notes. The default path uses local `ffmpeg` + `whisper-cli`; remote transcription, speaker models, and third-party note publishing are explicit opt-in features.
 
-Current version: `1.0.0`
+Current version: `1.0.1`
 
 ## Features
 
@@ -234,6 +275,46 @@ Current version: `1.0.0`
 - Generate a Codex-ready Markdown note with title, timestamp, placeholders for core ideas and quotes, cleaned full text, and metadata.
 - Infer basic punctuation from ASR segment timing and text cues: commas for intra-sentence pauses, line breaks only after complete sentences or questions.
 - Publish to local Markdown, Obsidian vaults, an optional Youdao-compatible backend, or cache only.
+
+## When to Use
+
+- Podcasts, interviews, meeting recordings, lectures, and video sources that need long-form transcription.
+- Workflows where Codex should read the full transcript before producing core ideas, quotes, and cleaned full text.
+- Users who want local-first processing and only opt into OpenAI, pyannote, Youdao, or other external services explicitly.
+- Knowledge-management workflows that save output into Obsidian vaults or local Markdown folders.
+
+## Inputs and Outputs
+
+Inputs:
+
+- Local audio or video files.
+- HTTP(S) media URLs.
+- Optional title, language, speaker-count hints, model path, and publishing backend.
+
+Outputs:
+
+- `transcript.txt`: raw transcript text.
+- `segments.json`: timestamped ASR segments.
+- `speaker_transcript.txt`: speaker-aware full-text draft.
+- `note.md`: Codex-ready Markdown note.
+- Optional publish result: local Markdown, Obsidian file, or Youdao note payload.
+
+## Typical Prompts
+
+```text
+Use media-transcribe-public to transcribe this podcast into Markdown, save it to my local notes folder, and do not upload to remote services.
+```
+
+```text
+Use media-transcribe-public to transcribe this interview, separate 2-3 speakers, and write the output to my Obsidian Transcripts folder.
+```
+
+## Common Failure Modes
+
+- Publishing the first `note.md` draft directly: it usually still contains placeholders for core ideas and quotes.
+- Treating CLI punctuation as final copy: the CLI only drafts punctuation; Codex should still perform the final cleanup.
+- Enabling remote services by default: OpenAI, pyannote, and Youdao must be selected explicitly.
+- Ignoring cache reuse: use `--force` or a fresh cache directory when testing punctuation, model, or diarization changes.
 
 ## Repository Layout
 
@@ -247,7 +328,8 @@ media-transcribe-public/
 ├── skill/
 │   └── media-transcribe-public/
 │       ├── SKILL.md
-│       └── agents/openai.yaml
+│       ├── agents/openai.yaml
+│       └── references/gotchas.md
 ├── src/
 │   └── media_transcribe_public/
 │       ├── __init__.py
@@ -432,6 +514,6 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 ## Version
 
-Current version: `1.0.0`
+Current version: `1.0.1`
 
-Release tag: `media_transcribe_public-1.0.0`
+Release tag: `media_transcribe_public-1.0.1`

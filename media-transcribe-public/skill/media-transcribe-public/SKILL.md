@@ -1,22 +1,22 @@
 ---
 name: media-transcribe-public
-description: Use when a user provides an audio or video file and wants a local-first Markdown transcript, Codex-ready summary draft, speaker-aware full text, or publishing to local files, Obsidian, or optional note backends.
+description: Use when a user provides an audio or video file and wants local-first transcription into a Codex-ready Markdown note, speaker-aware draft text, or publishing to local files, Obsidian, or an explicitly selected note backend.
 ---
 
 # Media Transcribe Public
 
-Use the packaged `media-transcribe-public` CLI for audio/video transcription workflows. Prefer local `whisper.cpp` and local Markdown output unless the user explicitly asks for a remote transcription backend or a third-party note backend.
+Use the packaged `media-transcribe-public` CLI to turn audio/video into a Markdown transcript draft. Keep the default path local unless the user explicitly chooses OpenAI transcription or a remote note backend.
 
 ## Workflow
 
 1. Resolve the input media path or URL.
-2. Run a dry-run before live transcription:
+2. Dry-run first:
 
 ```bash
 media-transcribe-public "/path/to/audio.mp3" --title "Note title" --dry-run
 ```
 
-3. Run local transcription. Use `--no-polish` when Codex should fill the final editorial sections:
+3. Produce a Codex-ready draft. Use `--no-polish`; Codex should do the editorial pass:
 
 ```bash
 media-transcribe-public "/path/to/audio.mp3" \
@@ -30,7 +30,7 @@ media-transcribe-public "/path/to/audio.mp3" \
   --no-polish
 ```
 
-4. For Obsidian output:
+4. For Obsidian:
 
 ```bash
 media-transcribe-public "/path/to/audio.mp3" \
@@ -42,32 +42,39 @@ media-transcribe-public "/path/to/audio.mp3" \
   --no-polish
 ```
 
-5. Read the generated `speaker_transcript.txt` and `note.md` from the returned `job_dir`. Codex should use its own capability to:
-   - replace `## 核心观点` with 5-10 complete arguments;
-   - replace `## 金句` with concise lines grounded in the transcript;
-   - rewrite `## 清洗后全文` with better sentence breaks, punctuation, speaker-aware paragraphs, and simplified Chinese when the source is Chinese.
-6. Save or publish the edited Markdown using the requested backend. Do not upload to OpenAI, Youdao, Notion, Feishu, or any other remote service unless the user explicitly chooses that backend.
-7. Report the title, media duration, transcription backend, note backend, cache/job directory, local `note.md`, and any publish path or payload path.
+5. Read `speaker_transcript.txt`, `note.md`, `segments.json`, and `meta.json` from the returned `job_dir`.
+6. Codex fills `核心观点`, `金句`, and final `清洗后全文`; the CLI handles deterministic media work and draft structure.
+7. Publish only to the backend the user selected.
 
-## Backends
+## Backend Rules
 
-- `--note-backend local`: default local Markdown. With `--output-dir`, writes a copy outside the cache.
-- `--note-backend obsidian`: writes Markdown into an Obsidian vault. Requires `--vault-path` or `OBSIDIAN_VAULT`; `--vault-folder` is optional.
-- `--note-backend youdao`: optional compatibility backend. Requires the local `youdaonote` CLI and `--destination` with the parent folder ID.
-- `--note-backend none`: only keep cache artifacts.
+- Default: `--note-backend local`, or `none` if the user only wants cache artifacts.
+- Obsidian: require `--vault-path` or `OBSIDIAN_VAULT`.
+- Youdao: require configured `youdaonote` CLI and `--destination`.
+- OpenAI transcription: require `--backend openai` and `OPENAI_API_KEY`.
+- Never upload media or notes to remote services by implication.
 
-## Local Requirements
+## Editorial Contract
 
-- `ffmpeg` and `ffprobe` on `PATH`.
-- `whisper-cli` on `PATH` for the default `local-whisper-cpp` backend.
-- A whisper.cpp GGML model at `~/.cache/whisper-cpp/ggml-small.bin`, `~/.cache/whisper-cpp/ggml-base.bin`, `WHISPER_CPP_MODEL`, or `--model-path`.
-- Optional Chinese conversion: `opencc-python-reimplemented`.
-- Optional local clustering diarization: `numpy`, `scipy`, `scikit-learn`.
-- Optional pyannote diarization: `pyannote.audio` plus a Hugging Face token in `PYANNOTE_AUTH_TOKEN`, `HUGGINGFACE_TOKEN`, or `HF_TOKEN`.
+Codex should:
 
-## Output Format
+- replace `## 核心观点` with 5-10 transcript-grounded arguments;
+- replace `## 金句` with concise lines grounded in the transcript;
+- rewrite `## 清洗后全文` with speaker labels, natural paragraphing, punctuation cleanup, and simplified Chinese when appropriate;
+- keep the oral tone instead of turning the transcript into a generic article.
 
-The final note should remain Markdown:
+## Gotchas
+
+Read [references/gotchas.md](references/gotchas.md) when the transcript is long, multi-speaker, cached, or intended for publication.
+
+Minimum checks before reporting done:
+
+- `note.md` exists and has no placeholder sections when final output is requested.
+- `speaker_transcript.txt` exists for transcript review.
+- remote backends were explicitly requested.
+- secrets, `.env`, and local note-service config were not printed.
+
+## Output Contract
 
 ```markdown
 # {title}
@@ -81,11 +88,7 @@ The final note should remain Markdown:
 
 ## 清洗后全文
 **说话人A**：...
+
+## 元信息
+- 媒体时长：...
 ```
-
-## Privacy Rules
-
-- Default local transcription does not upload media.
-- `--backend openai` uploads normalized media segments to OpenAI.
-- `--note-backend youdao` uploads note Markdown through the local `youdaonote` CLI.
-- Never print API keys, tokens, `.env` values, or note-service config file contents.
