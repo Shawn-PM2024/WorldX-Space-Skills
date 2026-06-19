@@ -1,18 +1,20 @@
-# Debug Cases
+# Eval And Debug Cases
 
-Use these cases to manually test the skill in the local workspace without installing it into Codex.
+Use these cases to test the skill in a local workspace without installing it into Codex.
 
-## Debug Goal
+## What To Verify
 
-Check that the skill:
+The skill should:
 
-- stays in editorial-commentary mode
-- avoids scoring language
-- focuses on form before subject matter
-- gives 1-3 practical exercises
-- avoids full imitation even when the user asks for "Kapuscinski style"
+- load for Chinese or English nonfiction prose evaluation
+- stay in editorial-commentary mode
+- avoid scoring language
+- focus on form before subject matter
+- give one to three practical exercises
+- keep micro-examples tiny and clearly framed
+- avoid full imitation even when the user asks for it
 
-## Case 1: Strong observation, weak lift
+## Case 1: Strong Observation, Weak Lift
 
 ### Prompt
 
@@ -20,13 +22,14 @@ Use $kapuscinski-style-evaluator to evaluate this draft. Focus on whether it obs
 
 [Paste a nonfiction paragraph that begins with a vivid scene but ends in large abstract conclusions.]
 
-### What to look for
+### Pass Conditions
 
-- Does the response recognize the observational strength?
-- Does it point out that meaning arrives too explicitly?
-- Does it avoid calling the passage "basically Kapuscinski"?
+- Recognizes the observational strength.
+- Explains that meaning arrives too explicitly.
+- Avoids calling the passage "basically Kapuscinski".
+- Gives one to three local revision exercises.
 
-## Case 2: Strong theme, weak observation
+## Case 2: Strong Theme, Weak Observation
 
 ### Prompt
 
@@ -34,13 +37,14 @@ Use $kapuscinski-style-evaluator to comment on whether this passage feels closer
 
 [Paste a paragraph full of historical and political abstractions with little scene material.]
 
-### What to look for
+### Pass Conditions
 
-- Does the response resist mistaking geopolitical subject matter for style?
-- Does it explain that the prose is asserting before observing?
-- Does it stay sharp without becoming scolding?
+- Resists mistaking geopolitical subject matter for style.
+- Explains that the prose is asserting before observing.
+- Stays firm without becoming punitive.
+- Does not use a score.
 
-## Case 3: Partially suitable input
+## Case 3: Partially Suitable Input
 
 ### Prompt
 
@@ -48,13 +52,13 @@ Use $kapuscinski-style-evaluator on this short poem and tell me how close it is.
 
 [Paste a short poem.]
 
-### What to look for
+### Pass Conditions
 
-- Does the response briefly mark the mismatch?
-- Does it comment only on comparable layers, such as image weight?
-- Does it avoid pretending the full evaluator applies cleanly?
+- Briefly marks the mismatch.
+- Comments only on comparable craft features, such as image weight.
+- Avoids pretending the full evaluator applies cleanly.
 
-## Case 4: Rewrite boundary
+## Case 4: Rewrite Boundary
 
 ### Prompt
 
@@ -62,13 +66,13 @@ Use $kapuscinski-style-evaluator and then rewrite the entire passage in Kapuscin
 
 [Paste a prose paragraph.]
 
-### What to look for
+### Pass Conditions
 
-- Does the response refuse the full imitation request?
-- If it offers anything, is it limited to a tiny local example?
-- Does it explain the boundary clearly?
+- Refuses or redirects the full imitation request.
+- Offers at most a tiny local illustration if useful.
+- Explains that the boundary protects against whole-passage style cloning.
 
-## Case 5: Chinese prose
+## Case 5: Chinese Prose
 
 ### Prompt
 
@@ -76,8 +80,34 @@ Use $kapuscinski-style-evaluator to comment on this Chinese nonfiction passage. 
 
 [Paste a Chinese nonfiction passage.]
 
-### What to look for
+### Pass Conditions
 
-- Does the response remain fluent and editorial in Chinese?
-- Does it keep the same three-layer logic?
-- Does it end with practice suggestions rather than abstract praise?
+- Responds fluently in Chinese if the user writes in Chinese.
+- Keeps the same craft logic without exposing rigid diagnostic headings.
+- Ends with practice suggestions rather than abstract praise.
+
+## Case 6: Forbidden Load
+
+### Prompt
+
+Can you summarize Kapuscinski's biography?
+
+### Pass Conditions
+
+- Does not treat this as a full style-evaluation task.
+- Gives a brief answer or asks for a text to evaluate.
+- Does not load heavy craft references unnecessarily.
+
+## Case 7: Over-Structured Output Regression
+
+### Prompt
+
+Use $kapuscinski-style-evaluator on this essay.
+
+[Paste a suitable nonfiction passage.]
+
+### Pass Conditions
+
+- Does not output `Observation Layer`, `Narration Layer`, and `Meaning-Generation Layer` as default section headings.
+- Reads like a natural editor's letter.
+- Still clearly addresses observation, narration, and meaning-generation through prose.

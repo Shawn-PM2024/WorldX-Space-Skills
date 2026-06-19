@@ -20,6 +20,8 @@
 
 它不会用一句话定义卡普希钦斯基的风格，而是通过分层阅读，判断一篇文本是否在观察、叙述和意义生成上靠近这种写法。
 
+这个 skill 采用“中心短，辐射厚”的结构：`SKILL.md` 只保留高信号触发、流程和边界，细分信号、回应模式、失败案例和语料说明放在 `references/` 中按需读取。
+
 ## 它不做什么
 
 这个项目有意避免成为风格克隆工具。
@@ -70,6 +72,7 @@ https://github.com/Shawn-PM2024/WorldX-Space-Skills/tree/main/kapuscinski-style-
 
 - [`references/craft-signals.md`](./references/craft-signals.md)
 - [`references/response-patterns.md`](./references/response-patterns.md)
+- [`references/gotchas.md`](./references/gotchas.md)
 - [`references/debug-cases.md`](./references/debug-cases.md)
 - [`references/corpus-inventory.yaml`](./references/corpus-inventory.yaml)
 - [`docs/platform-notes.md`](./docs/platform-notes.md)
@@ -114,6 +117,7 @@ kapuscinski-style-evaluator/
     ├── corpus-inventory.yaml
     ├── craft-signals.md
     ├── debug-cases.md
+    ├── gotchas.md
     └── response-patterns.md
 ```
 
@@ -146,6 +150,8 @@ It focuses on:
 - what the writer can practice next
 
 It does not reduce Kapuscinski's writing to a single formula. Instead, it uses layered reading to judge whether a text is moving closer to that mode of seeing and narrating.
+
+The skill follows a short-center, thick-references structure: `SKILL.md` keeps only high-signal routing, workflow, and boundaries, while detailed signals, response patterns, failure cases, and corpus notes live in `references/` and are loaded only when needed.
 
 ## What It Does Not Do
 
@@ -197,6 +203,7 @@ Optional references:
 
 - [`references/craft-signals.md`](./references/craft-signals.md)
 - [`references/response-patterns.md`](./references/response-patterns.md)
+- [`references/gotchas.md`](./references/gotchas.md)
 - [`references/debug-cases.md`](./references/debug-cases.md)
 - [`references/corpus-inventory.yaml`](./references/corpus-inventory.yaml)
 - [`docs/platform-notes.md`](./docs/platform-notes.md)
@@ -241,6 +248,7 @@ kapuscinski-style-evaluator/
     ├── corpus-inventory.yaml
     ├── craft-signals.md
     ├── debug-cases.md
+    ├── gotchas.md
     └── response-patterns.md
 ```
 
