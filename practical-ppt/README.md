@@ -2,7 +2,7 @@
 
 Practical PPT 是一个 Codex skill，用于将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿。
 
-当前版本：`1.0.2`
+当前版本：`1.0.3`
 
 English version: [English](#english)
 
@@ -12,9 +12,11 @@ English version: [English](#english)
 
 - 默认生成完整 PPT，包括封面页和结束页。
 - 先绘制 HTML 页面作为视觉源稿，再重建为可编辑的原生 PowerPoint 文本和图形对象。
+- 以 Agent 工作流方式执行：路由输入、规划 proof object、生成 HTML/PPTX、运行 QA、修复问题，再交付。
 - 支持两种样式模式：
   - `style-library`：从内置样式库选择模板类型，并根据主题和受众改造。
   - `user-template`：先审计用户提供的模板 PPT，再学习其视觉语法并适配到新主题。
+- 支持 `benchmark-compare`：对比另一个 PPT 输出，先分析叙事、样式、proof object、可读性和可编辑性差距，再重建。
 - 交付前执行 QA，包括文字溢出、重叠、越界、小字号、样式一致性、提纲匹配和内容合理性。
 
 ### 仓库结构
@@ -26,12 +28,15 @@ English version: [English](#english)
 ├── agents/
 │   └── openai.yaml
 ├── references/
+│   ├── proposal-proof-objects.md
 │   ├── qa-rubric.md
+│   ├── skill-principles.md
 │   └── style-library.md
 └── scripts/
     ├── audit_pptx_template.py
     ├── check_html_slides.mjs
     ├── check_pptx_structure.py
+    ├── check_pptx_text.py
     ├── html_to_pptx.mjs
     └── spec_to_editable_pptx.mjs
 ```
@@ -42,7 +47,8 @@ English version: [English](#english)
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/Shawn-PM2024/practical-ppt.git ~/.codex/skills/practical-ppt
+git clone --depth 1 https://github.com/Shawn-PM2024/WorldX-Space-Skills.git ~/.codex/skills/worldx-space-skills
+ln -sfn ~/.codex/skills/worldx-space-skills/practical-ppt ~/.codex/skills/practical-ppt
 ```
 
 之后在 Codex 中要求使用 `practical-ppt` 将提纲转换为 PPT。
@@ -110,7 +116,7 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 ### 版本管理
 
-本仓库使用语义化版本。当前发布版本为 `1.0.2`。
+本仓库使用语义化版本。当前发布版本为 `1.0.3`。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -118,15 +124,17 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 Practical PPT is a Codex skill for creating polished, readable, editable PowerPoint decks from outlines, markdown drafts, and structured notes.
 
-Current version: `1.0.2`
+Current version: `1.0.3`
 
 ### What It Does
 
 - Creates a complete deck by default, including a cover slide and an ending slide.
 - Designs the deck as HTML first, then rebuilds it as editable native PowerPoint text and shape objects.
+- Runs as an agentic workflow: route the input, plan proof objects, generate HTML/PPTX, run QA, repair issues, and then hand off evidence.
 - Supports two style modes:
   - `style-library`: select and adapt a reusable template type from the local style library.
   - `user-template`: audit a supplied template deck first, then adapt its visual grammar to the new topic.
+- Supports `benchmark-compare`: compare another deck output first, then rebuild based on narrative, style, proof-object, readability, and editability gaps.
 - Runs QA before delivery, including text overflow, overlap, out-of-bounds elements, small text, style consistency, outline matching, and content reasonableness.
 
 ### Repository Layout
@@ -138,12 +146,15 @@ Current version: `1.0.2`
 ├── agents/
 │   └── openai.yaml
 ├── references/
+│   ├── proposal-proof-objects.md
 │   ├── qa-rubric.md
+│   ├── skill-principles.md
 │   └── style-library.md
 └── scripts/
     ├── audit_pptx_template.py
     ├── check_html_slides.mjs
     ├── check_pptx_structure.py
+    ├── check_pptx_text.py
     ├── html_to_pptx.mjs
     └── spec_to_editable_pptx.mjs
 ```
@@ -154,7 +165,8 @@ Clone this repository into your Codex skills directory:
 
 ```bash
 mkdir -p ~/.codex/skills
-git clone https://github.com/Shawn-PM2024/practical-ppt.git ~/.codex/skills/practical-ppt
+git clone --depth 1 https://github.com/Shawn-PM2024/WorldX-Space-Skills.git ~/.codex/skills/worldx-space-skills
+ln -sfn ~/.codex/skills/worldx-space-skills/practical-ppt ~/.codex/skills/practical-ppt
 ```
 
 Then ask Codex to use `practical-ppt` when converting an outline into a deck.
@@ -222,6 +234,6 @@ Before delivery, Practical PPT expects:
 
 ### Versioning
 
-This repository uses semantic versioning. The current release is `1.0.2`.
+This repository uses semantic versioning. The current release is `1.0.3`.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.

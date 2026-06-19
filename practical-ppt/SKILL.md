@@ -1,17 +1,49 @@
 ---
 name: practical-ppt
-description: Use when the user wants to create a polished practical PowerPoint/PPTX deck from an outline, draft, markdown, or structured notes, especially when they mention practical_ppt, PPT提纲, 网页转PPT, reference/user template, PPT style learning, slide QA, or high-quality business/technology presentation output.
+description: Use when the user needs to turn an outline, article, markdown draft, meeting notes, or structured business/technology content into a polished, readable, editable PPTX deck; also use when they ask for PPT style learning, HTML-to-PPT workflow, user-template adaptation, benchmark comparison, slide QA, or practical_ppt.
 ---
 
 # Practical PPT
 
 ## Overview
 
-Create high-quality practical PPT decks by designing slide pages as HTML first, rebuilding them as editable native PowerPoint objects, and running a structured PPT quality check before delivery.
+Create high-quality practical PPT decks by turning expert presentation practice into an executable loop: read the source, choose a content/style route, plan proof objects, draw HTML as the visual source, rebuild the deck as editable native PowerPoint objects, run QA, repair, and only then deliver.
 
 Default to a complete deck with a cover slide and an ending slide, even when the user only provides the body outline.
 
-## Workflow
+This skill is not a prompt for "make a pretty PPT". It is a workflow package. Keep the center short and use the surrounding files only when needed:
+
+- [references/style-library.md](references/style-library.md): reusable style families and visual grammars.
+- [references/proposal-proof-objects.md](references/proposal-proof-objects.md): executive proposal proof-object patterns.
+- [references/qa-rubric.md](references/qa-rubric.md): blocking QA gate.
+- [references/skill-principles.md](references/skill-principles.md): maintenance principles for evolving this skill.
+- `scripts/`: deterministic audit, conversion, and QA helpers. Prefer calling them over re-implementing checks in prose.
+
+## Trigger Discipline
+
+Use this skill when the user wants a PPT/PPTX deliverable, a deck preview, a deck rebuild, a template/style adaptation, or a deck quality audit. Do not use it for ordinary long-form writing, single static images, generic web pages, or data analysis unless the end product is a presentation deck.
+
+If the request is ambiguous, infer the closest deck task and state the assumption. Ask at most one short clarification before visual work when the missing answer materially changes the deck:
+
+- strict outline or expanded content
+- target audience and use occasion
+- expected page count or time budget
+- whether a supplied deck is source content, a style reference, or a benchmark
+
+## Operating Contract
+
+- Default deliverable: editable PPTX with native text, shapes, tables, charts, and lines.
+- Default source of visual truth: HTML slides on a 16:9 canvas.
+- Default content mode: `strict-outline` when the user supplies an outline and asks for conversion.
+- Default required pages: cover and ending slide.
+- Default readability floor: normal PPT text at least 12pt; HTML text at least 16px on a 1600x900 canvas.
+- Default line spacing: at least single line spacing; prefer 1.15-1.35 for dense Chinese body copy.
+- Default QA stance: any text overflow, overlap, illegible small text, broken style frame, unsupported claim, or non-editable core text is blocking until fixed or explicitly accepted by the user.
+- Default repair path: revise HTML/spec first, then regenerate PPTX, then rerun checks.
+
+## Execution Loop
+
+Follow this loop. Do not skip the plan, style brief, or QA gates for non-trivial decks.
 
 1. Confirm or infer content mode before visual work.
 
@@ -53,6 +85,7 @@ For `benchmark-compare` mode:
 - Mark each slide as narrative, data/table, diagram/process, product/solution, case, comparison, or transition.
 - Choose one named proof object for each substantial slide before drawing: funnel, matrix, role swimlane, revenue stack, ownership donut, IP quadrant, timeline, checklist table, decision bridge, or another explicit object.
 - Create a small style brief naming: topic, audience, selected reference grammar, deliberate modifications, and what must not be copied.
+- Maintain a trace table: source outline item -> slide number -> treatment (`kept`, `merged`, `split`, `expanded`, or `omitted-with-reason`).
 - Avoid more than 3 consecutive body slides with the same table/card/list layout. Vary the proof object shape so the contact sheet has visible rhythm.
 
 4. Draw the deck as a webpage.
@@ -98,6 +131,12 @@ python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.jso
 - Use [references/qa-rubric.md](references/qa-rubric.md) as the blocking gate. Do not deliver if there are obvious overlap, overflow, style breakage, outline mismatch, or content-reasoning problems.
 - Iterate the HTML first, then regenerate PPTX.
 
+7. Package the handoff.
+
+- Return the final PPTX path, HTML preview path, slide spec path, QA report paths, and mode assumptions.
+- Mention whether the PPTX is editable and what content, if any, is intentionally image-backed.
+- Keep unresolved assumptions short and concrete.
+
 ## Design Bar
 
 The deck should match the reference set's practical quality: clear first-read hierarchy, coherent visual system, stable spacing, executive-readable density, and distinct slide rhythms. It should not look like a generic template with swapped text.
@@ -109,6 +148,19 @@ Every substantial slide needs:
 - controlled density: readable at presentation size and scannable at contact-sheet size
 - enough breathing room for native PPT rendering: text boxes should have vertical slack after line spacing is applied
 - distinct visual rhythm: the proof object should be recognizable at thumbnail size, not just as a block of text
+
+## Gotchas
+
+These are failure-derived constraints. Treat them as higher priority than generic design instincts.
+
+- Do not make the whole deck a sequence of card grids. If 3 body slides in a row share the same layout signature, redesign at least one slide.
+- Do not copy a template literally. Use its grammar, then adapt colors, motifs, proof objects, and media treatment to the topic.
+- Do not shrink text to solve overflow. Split, compress, or change the proof object.
+- Do not let decorative images replace proof. Every substantial slide needs a claim and a proof object.
+- Do not use full-slide screenshots as the primary PPTX export when the user expects editable slides.
+- Do not trust automated checks alone. Contact-sheet inspection is mandatory because style drift and visual rhythm are partly human-judgment problems.
+- Do not add unsourced facts in `strict-outline` mode. In `expanded-content` mode, keep source notes when facts matter.
+- Do not expose source-template contents in a new deck unless those contents are also part of the user's input.
 
 ## Outputs
 

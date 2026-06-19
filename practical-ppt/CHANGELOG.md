@@ -2,6 +2,13 @@
 
 All notable changes to Practical PPT are documented here.
 
+## 1.0.3 - 2026-06-19
+
+- Refined the skill into a clearer agentic capability unit with trigger discipline, operating contract, execution loop, packaging rules, and failure-derived gotchas.
+- Added maintainability principles for keeping the skill "center short, edges thick" while moving heavier judgment, QA, and deterministic work into references and scripts.
+- Tightened the default QA stance around editable PPTX, outline traceability, proof-object planning, contact-sheet review, and repair-before-handoff behavior.
+- Updated README versioning and repository installation instructions for the monorepo location.
+
 ## 1.0.2 - 2026-06-06
 
 - Added benchmark comparison mode for auditing another deck generated from the same or similar input.
