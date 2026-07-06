@@ -2,7 +2,7 @@
 
 Practical PPT 是一个 Codex skill，用于将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿。
 
-当前版本：`1.0.3`
+当前版本：`1.0.5`
 
 English version: [English](#english)
 
@@ -17,6 +17,7 @@ English version: [English](#english)
   - `style-library`：从内置样式库选择模板类型，并根据主题和受众改造。
   - `user-template`：先审计用户提供的模板 PPT，再学习其视觉语法并适配到新主题。
 - 支持 `benchmark-compare`：对比另一个 PPT 输出，先分析叙事、样式、proof object、可读性和可编辑性差距，再重建。
+- 内置中文述职/半年度汇报样式规则，强调中文字体、证据图片、蓝白结构、橙色节点提示、封面/结束页节奏和 contact sheet 多样性。
 - 交付前执行 QA，包括文字溢出、重叠、越界、小字号、样式一致性、提纲匹配和内容合理性。
 
 ### 仓库结构
@@ -95,6 +96,12 @@ python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-o
 python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --fail-on-review
 ```
 
+在中文述职、产品汇报、案例复盘等需要视觉证据的场景中，启用更严格的媒体与中文字体检查：
+
+```bash
+python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --min-media-files 1 --warn-ascii-fonts-for-cjk --fail-on-review
+```
+
 仅在明确接受非完全可编辑备份时，生成图片型 PPTX：
 
 ```bash
@@ -109,14 +116,14 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 - HTML slide QA，没有阻塞性布局问题。
 - PPTX text QA，没有 12pt 以下字号、缺失/低于单倍行距、估算溢出、越界或疑似重叠问题。
-- PPTX structure QA，没有过密页面、连续重复版式、缺少 proof object 的正文页。
+- PPTX structure QA，没有过密页面、连续重复版式、缺少 proof object 的正文页；在报告/述职场景下，没有缺失证据媒体或中文字体退化问题。
 - 缩略图总览人工检查。
 - PPTX 可编辑性检查，确认存在真实文本节点和可编辑图形。
 - 根据 `references/qa-rubric.md` 做样式和内容审查。
 
 ### 版本管理
 
-本仓库使用语义化版本。当前发布版本为 `1.0.3`。
+本仓库使用语义化版本。当前发布版本为 `1.0.5`。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -124,7 +131,7 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 Practical PPT is a Codex skill for creating polished, readable, editable PowerPoint decks from outlines, markdown drafts, and structured notes.
 
-Current version: `1.0.3`
+Current version: `1.0.5`
 
 ### What It Does
 
@@ -135,6 +142,7 @@ Current version: `1.0.3`
   - `style-library`: select and adapt a reusable template type from the local style library.
   - `user-template`: audit a supplied template deck first, then adapt its visual grammar to the new topic.
 - Supports `benchmark-compare`: compare another deck output first, then rebuild based on narrative, style, proof-object, readability, and editability gaps.
+- Includes Chinese performance-review/report style rules for CJK fonts, evidence media, blue-white structure, orange milestone accents, cover/ending rhythm, and contact-sheet variety.
 - Runs QA before delivery, including text overflow, overlap, out-of-bounds elements, small text, style consistency, outline matching, and content reasonableness.
 
 ### Repository Layout
@@ -213,6 +221,12 @@ Check final PPTX structure and visual rhythm:
 python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --fail-on-review
 ```
 
+For Chinese review, product, or case-report decks where visual evidence matters, enable stricter media and CJK font checks:
+
+```bash
+python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --min-media-files 1 --warn-ascii-fonts-for-cjk --fail-on-review
+```
+
 Create an image-backed PPTX only when explicitly acceptable:
 
 ```bash
@@ -227,13 +241,13 @@ Before delivery, Practical PPT expects:
 
 - HTML slide QA with no blocking layout issues.
 - PPTX text QA with no text below 12pt, missing or below-single line spacing, estimated overflow, out-of-bounds text, or likely overlaps.
-- PPTX structure QA with no over-dense slides, repeated layout runs, or body slides without proof objects.
+- PPTX structure QA with no over-dense slides, repeated layout runs, or body slides without proof objects; for report/review decks, no missing evidence media or CJK font fallback.
 - Visual contact sheet inspection.
 - PPTX editability check for real text runs and editable shapes.
 - A style/content review against `references/qa-rubric.md`.
 
 ### Versioning
 
-This repository uses semantic versioning. The current release is `1.0.3`.
+This repository uses semantic versioning. The current release is `1.0.5`.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.

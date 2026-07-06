@@ -10,6 +10,7 @@ Template types are style grammar, not fixed layouts to clone. For every new deck
 - **Red Strategic Planning**: red-white planning style, bold chapter numbers, dense organization/process diagrams, circular models, strong executive hierarchy.
 - **Dark AI Infrastructure**: dark technical style, cinematic contrast, low-key technical backgrounds, white text, timelines, architecture maps, team cards.
 - **Blue-White Corporate Tech**: light technology company style, glass panels, geometric motifs, structured contents, company/profile/product sections.
+- **Blue-Orange Performance Review**: Chinese semiannual/annual review style, white-blue structure, warm milestone accents, evidence photos, product/report proof pages, polished cover and closing rhythm.
 - **Adaptive Business Modular**: topic-routed business template system, modular section rhythm, remixable layouts, strong narrative skeleton.
 - **Editable Diagram Grammar**: native-shape diagram system for list, process, cycle, hierarchy, relationship, matrix, pyramid, and picture/timeline diagrams.
 - **Executive Proposal System**: board/shareholder proposal style, proof-object-first slides, premium sparse cover, strong decision narrative, native visual assets.
@@ -99,6 +100,25 @@ Use for company introductions, product portfolios, solution decks, industry scen
 - Typography: strong title in 44-64px, section labels in 18-24px, body 24-32px, captions 16-18px.
 - Layouts: contents page with numbered blocks, two-column profile pages, product cards, solution matrices, partner ecosystem maps.
 - Details: small corner brand label, thin dividers, soft shadows, translucent panels, icon-led bullet groups.
+
+### Blue-Orange Performance Review
+
+Use for Chinese personal reviews, semiannual/annual work reports, promotion/述职 decks, project owner reviews, OKR retrospectives, and plan-review presentations where the speaker needs credibility, evidence, and a composed business tone.
+
+- Background: mostly white or very pale blue, with soft geometric corner shards or pale page blocks. Keep the page clean; do not fill every corner.
+- Palette: deep blue for titles and primary panels, cyan/light blue for structure, orange for milestones/current state/warnings/key proof, charcoal for body text, pale blue cards for secondary material.
+- Typography: use a Chinese UI font stack such as `PingFang SC`, `Microsoft YaHei`, or `Noto Sans CJK SC`. Titles should be compact and confident; English eyebrow labels can be small uppercase but should not dominate Chinese content.
+- Layouts: cover with large centered title and restrained motif, two-phase work overview, three-achievement overview, achievement detail pages, product/version comparison, scenario map, evidence-photo page, organization/process execution plan, H2 focus plan, improvement/support table, ending slide.
+- Proof objects: phase cards, achievement strips, product comparison panels, timeline lanes, scenario radar/map, document/photo evidence board, org-resource-process swimlane, H2 priority grid, support-request table.
+- Media: include real evidence when available: product photos, prototype images, requirement documents, report snapshots, scene photos, or screenshots. If no media exists, create native schematic placeholders that reserve visual weight and state what evidence is missing.
+- Rhythm: alternate white analytic pages with one or two deep-blue emphasis panels. Use orange sparingly as a marker, not a second dominant theme. Add a quiet ending slide; do not end on a dense table.
+- Chrome: keep section labels, page numbers, thin top rules, and small brand/project marks stable. The contact sheet should show clear cover, overview, achievement, planning, support, and closing phases.
+
+Common failures to avoid:
+
+- Defaulting to Arial/Segoe UI for Chinese-heavy decks.
+- Producing every page as pale card grids with no media, no dark emphasis page, and no visual proof.
+- Treating photos as decoration. Each image should anchor a claim, a product state, a scenario, or a document proof point.
 
 ### Red Strategic Planning
 

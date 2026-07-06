@@ -21,6 +21,8 @@ def parse_args():
     parser.add_argument("--max-slide-chars", type=int, default=650)
     parser.add_argument("--max-text-boxes", type=int, default=18)
     parser.add_argument("--max-repeated-signature", type=int, default=3)
+    parser.add_argument("--min-media-files", type=int, default=0)
+    parser.add_argument("--warn-ascii-fonts-for-cjk", action="store_true")
     parser.add_argument("--fail-on-review", action="store_true")
     return parser.parse_args()
 
@@ -64,6 +66,8 @@ def main():
     pptx_path = Path(args.pptx)
     reports = []
     all_shapes = Counter()
+    fonts = Counter()
+    cjk_text_chars = 0
 
     with zipfile.ZipFile(pptx_path) as zf:
         slides = sorted(
@@ -76,7 +80,14 @@ def main():
             texts = [text_content(node) for node in root.findall(".//p:txBody", NS)]
             texts = [item for item in texts if item]
             joined = " ".join(texts)
+            cjk_text_chars += sum(1 for char in joined if "\u4e00" <= char <= "\u9fff")
             shape_counts = Counter()
+            slide_fonts = Counter()
+            for font in root.findall(".//a:latin", NS):
+                typeface = font.get("typeface")
+                if typeface:
+                    fonts[typeface] += 1
+                    slide_fonts[typeface] += 1
             for geom in root.findall(".//p:spPr/a:prstGeom", NS):
                 if geom.get("prst"):
                     shape_counts[geom.get("prst")] += 1
@@ -102,6 +113,7 @@ def main():
                     "proofType": proof_type,
                     "signature": signature,
                     "shapeCounts": dict(shape_counts.most_common(8)),
+                    "fonts": dict(slide_fonts.most_common(6)),
                     "sample": joined[:140],
                 }
             )
@@ -114,10 +126,29 @@ def main():
                 item["status"] = "review"
                 item["issues"].append(f"layout signature repeats {args.max_repeated_signature} slides")
 
+    deck_issues = []
+    if args.min_media_files and len(media_files) < args.min_media_files:
+        deck_issues.append(f"media files below required minimum {args.min_media_files}")
+    if args.warn_ascii_fonts_for_cjk and cjk_text_chars:
+        ascii_fonts = {"Arial", "Segoe UI", "Calibri", "Helvetica", "Aptos"}
+        top_fonts = [name for name, _count in fonts.most_common(5)]
+        if top_fonts and all(name in ascii_fonts for name in top_fonts):
+            deck_issues.append("CJK deck appears to rely on ASCII UI fonts instead of a Chinese font family")
+
+    if deck_issues:
+        for item in reports:
+            if item["slide"] == 1:
+                item["status"] = "review"
+                item["issues"].extend(deck_issues)
+                break
+
     report = {
         "input": str(pptx_path.resolve()),
         "slides": len(reports),
         "mediaFiles": len(media_files),
+        "deckIssues": deck_issues,
+        "fonts": dict(fonts.most_common(12)),
+        "cjkTextChars": cjk_text_chars,
         "shapeTypes": dict(all_shapes.most_common(12)),
         "proofTypes": dict(Counter(item["proofType"] for item in reports)),
         "summary": {

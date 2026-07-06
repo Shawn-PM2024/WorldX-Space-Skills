@@ -15,7 +15,10 @@ Compare at least:
 - text density and minimum readable size
 - proof object type per slide
 - visual rhythm across cover, body, comparison, financial/decision, appendix, and ending pages
+- cover and ending slide polish: title composition, whitespace, brand/project mark, motif restraint, and whether the ending feels intentional
+- font system: especially whether Chinese-heavy decks use a real Chinese UI font instead of default Latin fonts
 - media/native asset usage: dot grids, rules, dividers, badges, charts, icons, schematic shapes, product/market visuals
+- evidence usage: photos, screenshots, document snapshots, product images, scene images, or explicit native placeholders when visual evidence is missing
 - repeated layout signatures: too many pages using the same card grid, table, or boxed-list grammar
 - content compression: what was merged, split, summarized, or made visual
 
@@ -25,6 +28,7 @@ Write a `benchmark-gap-brief.md` with:
 - what the current deck does better
 - which gaps are style only
 - which gaps are story/proof-object gaps
+- which gaps are evidence gaps, such as missing media, missing document proof, or weak product/scenario visualization
 - exact slide-level changes to make before rebuilding
 
 ## Joint Venture / Executive Proposal Spine

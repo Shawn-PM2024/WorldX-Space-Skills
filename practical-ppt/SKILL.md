@@ -74,8 +74,9 @@ python3 scripts/audit_pptx_template.py reference-template.pptx --out template-au
 For `benchmark-compare` mode:
 
 - Run text QA and structure QA on both decks when files are available.
-- Compare narrative spine, proof-object choice, layout rhythm, visual assets, text density, readability, and editability.
-- Write `benchmark-gap-brief.md` before making a new version. Separate style gaps from story/proof-object gaps.
+- Compare narrative spine, proof-object choice, layout rhythm, visual assets, media evidence, font system, text density, readability, and editability.
+- Render or inspect a contact sheet for both decks. The comparison must mention cover/ending polish, section rhythm, repeated layout signatures, dark/light contrast pages, media/photo/screenshot usage, accent-color hierarchy, and page chrome consistency.
+- Write `benchmark-gap-brief.md` before making a new version. Separate style gaps from story/proof-object gaps, and list concrete "keep/change/avoid" rules before rebuilding.
 - Use [references/proposal-proof-objects.md](references/proposal-proof-objects.md) for executive, strategy, shareholder, financing, and joint-venture decks.
 
 3. Build the slide plan.
@@ -85,6 +86,8 @@ For `benchmark-compare` mode:
 - Mark each slide as narrative, data/table, diagram/process, product/solution, case, comparison, or transition.
 - Choose one named proof object for each substantial slide before drawing: funnel, matrix, role swimlane, revenue stack, ownership donut, IP quadrant, timeline, checklist table, decision bridge, or another explicit object.
 - Create a small style brief naming: topic, audience, selected reference grammar, deliberate modifications, and what must not be copied.
+- For Chinese business decks, define the font policy before drawing. Prefer a Chinese UI font stack such as `PingFang SC`, `Microsoft YaHei`, `Noto Sans CJK SC`, or the supplied template's Chinese font. Do not default to Arial/Segoe UI for Chinese-heavy pages unless matching a user template.
+- For review, report, product, case, or portfolio decks, define the media/evidence policy: which slides need product screenshots, photos, document snapshots, diagrams, logos supplied by the user, or native schematic stand-ins. A deck with only boxes and text should be treated as incomplete when visual evidence is available.
 - Maintain a trace table: source outline item -> slide number -> treatment (`kept`, `merged`, `split`, `expanded`, or `omitted-with-reason`).
 - Avoid more than 3 consecutive body slides with the same table/card/list layout. Vary the proof object shape so the contact sheet has visible rhythm.
 
@@ -97,6 +100,8 @@ For `benchmark-compare` mode:
 - Set paragraph and label line-height to at least `1.0`; prefer `1.15`-`1.35` for body text and dense Chinese paragraphs.
 - Favor real layout systems: CSS grid, flex, SVG diagrams, tables, and chart libraries. Avoid decorative clutter that does not clarify the slide.
 - Build reusable visual assets as native/vector grammar: dot grids, thin rules, badges, stage labels, dividers, rings, chevrons, ladders, funnels, and schematic icons. Do not rely on flat card grids for every slide.
+- Make cover and ending slides feel intentional, not like body slides with larger text. Use restrained hero spacing, stable brand/project marks when supplied, a single decisive title block, and subtle motif geometry or media.
+- Use accent colors as signals. In blue-white business decks, keep deep blue for primary hierarchy, cyan/light blue for structure, and a warm accent such as orange only for milestones, warnings, current-state markers, or key numbers.
 - Check the HTML in a browser before export. The webpage is the visual source of truth.
 
 5. Build an editable PPTX.
@@ -124,6 +129,12 @@ python3 scripts/check_pptx_text.py deck.pptx --output pptx-text-qa.json --fail-o
 
 ```bash
 python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --fail-on-review
+```
+
+- For Chinese review/report decks where visual evidence matters, add the richer structure checks:
+
+```bash
+python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.json --min-media-files 1 --warn-ascii-fonts-for-cjk --fail-on-review
 ```
 
 - Inspect a rendered contact sheet before delivery. Automated checks do not replace visual review.
@@ -154,6 +165,8 @@ Every substantial slide needs:
 These are failure-derived constraints. Treat them as higher priority than generic design instincts.
 
 - Do not make the whole deck a sequence of card grids. If 3 body slides in a row share the same layout signature, redesign at least one slide.
+- Do not ship Chinese-heavy decks with default Latin UI fonts when the output is meant to look locally polished.
+- Do not make review/report decks entirely text-and-shape based when the content naturally has proof photos, screenshots, documents, product images, or user-supplied visual evidence.
 - Do not copy a template literally. Use its grammar, then adapt colors, motifs, proof objects, and media treatment to the topic.
 - Do not shrink text to solve overflow. Split, compress, or change the proof object.
 - Do not let decorative images replace proof. Every substantial slide needs a claim and a proof object.

@@ -9,6 +9,7 @@ Blocking issues:
 - text overlaps other text, charts, images, page chrome, or slide edges
 - any normal PPT text is below 12pt; in HTML this maps to a default minimum of 16px on a 1600x900 slide canvas
 - font-size hierarchy is incoherent: body copy larger than headings, many unrelated sizes, or abrupt jumps without purpose
+- Chinese-heavy business decks rely on default Latin UI fonts such as Arial, Segoe UI, Calibri, Helvetica, or Aptos when a Chinese font family or user-template font is available
 - line-height is below single spacing, missing on multi-line PPT text boxes, causes clipping, crops descenders, or makes Chinese paragraphs unreadable
 - long Chinese/English words overflow buttons, labels, cards, tables, or diagram nodes
 - text exceeds its card, table cell, diagram node, callout, or style frame after export to PPTX
@@ -48,8 +49,10 @@ Blocking issues:
 - colors, shadows, border radii, icon styles, or diagram styles drift without chapter-level reason
 - imported images are blurry, stretched, darkened excessively, or visually unrelated
 - cover, section, body, and ending pages do not feel like the same deck
+- cover or ending pages look like ordinary content slides instead of intentional opening/closing pages
 - most body slides use the same table/card/list grammar, making the deck fail the contact-sheet rhythm test
 - substantial slides contain no recognizable proof object beyond text boxes
+- review, report, product, case, or portfolio decks contain no media/evidence pages when relevant photos, screenshots, documents, product renders, or supplied images are available
 - in `user-template` mode, the output either copies the template content too literally or fails to preserve the template's visual grammar
 
 Checks:
@@ -57,9 +60,11 @@ Checks:
 - compare contact sheet rhythm against the selected style family in `style-library.md`
 - compare against the style brief: the deck should adapt reference grammar to the topic, not imitate a reference page literally
 - in `user-template` mode, compare against `template-style-brief.md` and verify palette, typography scale, spacing, motif, density, and page rhythm were learned before generation
+- in `benchmark-compare` mode, compare both rendered contact sheets and verify the rebuilt deck closes the agreed style gaps, especially media usage, font system, cover/ending polish, accent hierarchy, and layout variety
 - verify each slide has stable margins and alignment
 - confirm charts, tables, diagrams, and cards share a consistent grammar
 - confirm each substantial slide has a named proof object and that no more than 3 consecutive body slides share the same layout signature
+- for Chinese review/report decks, run `scripts/check_pptx_structure.py deck.pptx --min-media-files 1 --warn-ascii-fonts-for-cjk --fail-on-review` when media evidence should exist
 
 ## 4. Outline Match
 

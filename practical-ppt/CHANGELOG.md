@@ -2,6 +2,13 @@
 
 All notable changes to Practical PPT are documented here.
 
+## 1.0.5 - 2026-07-06
+
+- Added a Blue-Orange Performance Review style family for Chinese semiannual/annual review and 述职 decks, including Chinese font policy, evidence-media treatment, cover/ending rhythm, and blue/cyan/orange hierarchy rules.
+- Tightened benchmark comparison guidance so agents must inspect rendered contact sheets and compare media evidence, font system, cover/ending polish, accent hierarchy, and repeated layout signatures before rebuilding.
+- Expanded QA blocking rules for Chinese business decks that fall back to Latin UI fonts, report decks with missing evidence media, and decks whose cover/ending pages lack intentional presentation rhythm.
+- Enhanced `check_pptx_structure.py` to report font families and CJK text, and to optionally flag missing media evidence and Latin-font fallback with `--min-media-files` and `--warn-ascii-fonts-for-cjk`.
+
 ## 1.0.3 - 2026-06-19
 
 - Refined the skill into a clearer agentic capability unit with trigger discipline, operating contract, execution loop, packaging rules, and failure-derived gotchas.
