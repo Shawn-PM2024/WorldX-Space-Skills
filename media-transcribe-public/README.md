@@ -4,16 +4,17 @@
 
 `media-transcribe-public` 是一个本地优先的音视频转写开源项目，同时内置 Codex skill。它把本地或 URL 音视频转成 Markdown 笔记，默认使用本机 `ffmpeg` + `whisper-cli`，并把远程转写、说话人模型和第三方笔记发布都设计为显式可选能力。
 
-当前版本：`1.0.1`
+当前版本：`1.0.2`
 
 ## 功能
 
 - 转写本地音频、视频文件或 HTTP(S) 媒体 URL。
 - 默认使用本机 `whisper.cpp`，不需要 OpenAI API key。
-- 对长文件自动压缩、切段、缓存，避免重复转写。
-- 支持可选说话人区分：本地聚类、whisper stereo diarization、pyannote。
+- 对长文件自动压缩、切段、并行转写和逐段缓存；中断后可复用已经完成的片段。
+- whisper.cpp 启动前检测 GPU/Metal，崩溃时自动回退 CPU；也可显式使用 `--whisper-no-gpu`。
+- 支持可选说话人区分：本地 sherpa-onnx 神经聚类、whisper stereo diarization、pyannote。
 - 生成 Codex 可继续整理的 Markdown：标题、整理时间、核心观点占位、金句占位、清洗后全文和元信息。
-- 根据 ASR segment 时间和文本 cue 做基础标点推断：句内停顿用逗号，完整句或问句才换行。
+- 根据 ASR segment 时间和文本 cue 做基础标点推断；同一说话人的一次对话轮次保持为一个段落，仅在说话人变化时换段。
 - 支持发布后端：本地 Markdown、Obsidian vault、Youdao 兼容后端、仅缓存不发布。
 
 ## 适合场景
@@ -55,6 +56,7 @@
 - 把 CLI 的断句当作最终文本：CLI 只做草稿标点，Codex 仍需要做最终整理。
 - 默认启用远程服务：OpenAI、pyannote、Youdao 都必须由用户显式选择。
 - 没有确认缓存：复测断句、模型或说话人逻辑时应使用 `--force` 或新缓存目录。
+- 忽略 `meta.json` 的 `speaker_turns_per_minute`：高于 8 通常表示说话人标签过度碎片化，应先抽查再发布。
 
 ## 仓库结构
 
@@ -129,6 +131,21 @@ export WHISPER_CPP_MODEL=/path/to/ggml-model.bin
 media-transcribe-public input.mp3 --model-path /path/to/ggml-model.bin
 ```
 
+本地说话人区分使用 sherpa-onnx 的 pyannote segmentation 与 3D-Speaker embedding ONNX 模型。下面示例把模型放到一个显式目录，避免依赖操作系统默认缓存位置：
+
+```bash
+export MEDIA_TRANSCRIBE_DIARIZATION_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/media-transcribe-public/diarization"
+mkdir -p "$MEDIA_TRANSCRIBE_DIARIZATION_DIR"
+curl -L -o "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/segmentation.tar.bz2" \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
+tar -xjf "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/segmentation.tar.bz2" \
+  -C "$MEDIA_TRANSCRIBE_DIARIZATION_DIR"
+curl -L -o "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx" \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx
+```
+
+也可以分别设置 `MEDIA_TRANSCRIBE_SEGMENTATION_MODEL`、`MEDIA_TRANSCRIBE_EMBEDDING_MODEL`，或传入 `--speaker-segmentation-model`、`--speaker-embedding-model`。
+
 ## 快速开始
 
 只保留缓存和 `note.md`：
@@ -185,7 +202,7 @@ media-transcribe-public input.mp3 \
   --model gpt-4o-mini-transcribe
 ```
 
-本地聚类说话人区分需要数值计算依赖：
+本地神经说话人区分需要 sherpa-onnx 依赖和上方两个模型：
 
 ```bash
 python3 -m pip install -e ".[diarization-cluster]"
@@ -194,6 +211,8 @@ media-transcribe-public input.mp3 \
   --min-speakers 2 \
   --max-speakers 3
 ```
+
+超过 30 分钟且已切成多个片段时，`--transcribe-jobs auto` 会根据 CPU 数量使用最多 3 个并行任务。可用 `--transcribe-jobs 1` 强制串行；Metal 不稳定时可用 `--whisper-no-gpu`，默认 `--gpu-preflight auto` 也会自动回退。
 
 pyannote 说话人区分需要本地 Python 包和 Hugging Face 模型权限：
 
@@ -254,9 +273,9 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 ## 版本
 
-当前版本：`1.0.1`
+当前版本：`1.0.2`
 
-发布 tag：`media_transcribe_public-1.0.1`
+发布 tag：`media_transcribe_public-1.0.2`
 
 ---
 
@@ -264,16 +283,17 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 `media-transcribe-public` is a local-first open-source audio/video transcription project with a bundled Codex skill. It turns local files or HTTP(S) media URLs into Markdown notes. The default path uses local `ffmpeg` + `whisper-cli`; remote transcription, speaker models, and third-party note publishing are explicit opt-in features.
 
-Current version: `1.0.1`
+Current version: `1.0.2`
 
 ## Features
 
 - Transcribe local audio/video files or HTTP(S) media URLs.
 - Use local `whisper.cpp` by default, with no OpenAI API key required.
-- Normalize, segment, and cache long media files to avoid repeated transcription.
-- Optionally assign speaker labels through local clustering, whisper stereo diarization, or pyannote.
+- Normalize, segment, transcribe in parallel, and cache long media per segment so interrupted runs can resume.
+- Probe whisper.cpp GPU/Metal before a run and retry on CPU after backend crashes; `--whisper-no-gpu` is also available.
+- Optionally assign speaker labels through local sherpa-onnx neural diarization, whisper stereo diarization, or pyannote.
 - Generate a Codex-ready Markdown note with title, timestamp, placeholders for core ideas and quotes, cleaned full text, and metadata.
-- Infer basic punctuation from ASR segment timing and text cues: commas for intra-sentence pauses, line breaks only after complete sentences or questions.
+- Infer draft punctuation from ASR timing and text cues; keep each speaker turn in one paragraph and start a new paragraph only when the speaker changes.
 - Publish to local Markdown, Obsidian vaults, an optional Youdao-compatible backend, or cache only.
 
 ## When to Use
@@ -315,6 +335,7 @@ Use media-transcribe-public to transcribe this interview, separate 2-3 speakers,
 - Treating CLI punctuation as final copy: the CLI only drafts punctuation; Codex should still perform the final cleanup.
 - Enabling remote services by default: OpenAI, pyannote, and Youdao must be selected explicitly.
 - Ignoring cache reuse: use `--force` or a fresh cache directory when testing punctuation, model, or diarization changes.
+- Ignoring `speaker_turns_per_minute` in `meta.json`: values above 8 usually indicate fragmented labels and require review before publishing.
 
 ## Repository Layout
 
@@ -389,6 +410,21 @@ export WHISPER_CPP_MODEL=/path/to/ggml-model.bin
 media-transcribe-public input.mp3 --model-path /path/to/ggml-model.bin
 ```
 
+Local diarization uses sherpa-onnx with pyannote segmentation and a 3D-Speaker embedding ONNX model. This example uses an explicit model directory instead of relying on an OS-specific cache path:
+
+```bash
+export MEDIA_TRANSCRIBE_DIARIZATION_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/media-transcribe-public/diarization"
+mkdir -p "$MEDIA_TRANSCRIBE_DIARIZATION_DIR"
+curl -L -o "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/segmentation.tar.bz2" \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2
+tar -xjf "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/segmentation.tar.bz2" \
+  -C "$MEDIA_TRANSCRIBE_DIARIZATION_DIR"
+curl -L -o "$MEDIA_TRANSCRIBE_DIARIZATION_DIR/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx" \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx
+```
+
+Alternatively, set `MEDIA_TRANSCRIBE_SEGMENTATION_MODEL` and `MEDIA_TRANSCRIBE_EMBEDDING_MODEL`, or pass `--speaker-segmentation-model` and `--speaker-embedding-model`.
+
 ## Quick Start
 
 Keep only cache artifacts and `note.md`:
@@ -445,7 +481,7 @@ media-transcribe-public input.mp3 \
   --model gpt-4o-mini-transcribe
 ```
 
-Local clustering diarization needs numerical Python dependencies:
+Local neural diarization needs the sherpa-onnx extra and the two models above:
 
 ```bash
 python3 -m pip install -e ".[diarization-cluster]"
@@ -454,6 +490,8 @@ media-transcribe-public input.mp3 \
   --min-speakers 2 \
   --max-speakers 3
 ```
+
+For media longer than 30 minutes with multiple segments, `--transcribe-jobs auto` selects up to three workers from the available CPUs. Use `--transcribe-jobs 1` for serial execution. Use `--whisper-no-gpu` on unstable Metal systems; the default `--gpu-preflight auto` also falls back automatically.
 
 pyannote diarization needs a local Python package and Hugging Face model access:
 
@@ -514,6 +552,6 @@ python3 /path/to/skill-creator/scripts/quick_validate.py skill/media-transcribe-
 
 ## Version
 
-Current version: `1.0.1`
+Current version: `1.0.2`
 
-Release tag: `media_transcribe_public-1.0.1`
+Release tag: `media_transcribe_public-1.0.2`

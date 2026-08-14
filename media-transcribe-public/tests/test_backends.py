@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import subprocess
 
 from media_transcribe_public import cli
 
@@ -69,3 +70,73 @@ def test_default_cache_dir_respects_environment(monkeypatch, tmp_path: Path) -> 
     monkeypatch.setenv("MEDIA_TRANSCRIBE_CACHE_DIR", str(tmp_path / "cache"))
 
     assert cli.default_cache_dir() == tmp_path / "cache"
+
+
+def test_local_diarization_model_paths_are_configurable(monkeypatch, tmp_path: Path) -> None:
+    segmentation = tmp_path / "segmentation.onnx"
+    embedding = tmp_path / "embedding.onnx"
+    monkeypatch.setenv("MEDIA_TRANSCRIBE_SEGMENTATION_MODEL", str(segmentation))
+    monkeypatch.setenv("MEDIA_TRANSCRIBE_EMBEDDING_MODEL", str(embedding))
+
+    assert cli.resolve_local_diarization_models() == (segmentation, embedding)
+
+
+def test_resolve_transcribe_jobs_parallelizes_only_long_segmented_media() -> None:
+    assert cli.resolve_transcribe_jobs("auto", segment_count=4, duration_seconds=7200, cpu_count=12) == 3
+    assert cli.resolve_transcribe_jobs("auto", segment_count=4, duration_seconds=1200, cpu_count=12) == 1
+    assert cli.resolve_transcribe_jobs("2", segment_count=4, duration_seconds=1200, cpu_count=12) == 2
+
+
+def test_detects_whisper_metal_crash() -> None:
+    crashed = subprocess.CalledProcessError(139, ["whisper-cli"], stderr="ggml_backend_metal failed")
+
+    assert cli.is_whisper_gpu_failure(crashed) is True
+
+
+def test_smooths_short_speaker_spike_between_same_speaker() -> None:
+    diarization = [
+        {"start": 0.0, "end": 5.0, "speaker": "speaker_0"},
+        {"start": 5.0, "end": 5.35, "speaker": "speaker_1"},
+        {"start": 5.35, "end": 10.0, "speaker": "speaker_0"},
+    ]
+
+    assert cli.smooth_diarization_segments(diarization) == [
+        {"start": 0.0, "end": 10.0, "speaker": "speaker_0"}
+    ]
+
+
+def test_preserves_short_interjection_between_different_speakers() -> None:
+    diarization = [
+        {"start": 0.0, "end": 5.0, "speaker": "speaker_0"},
+        {"start": 5.0, "end": 5.35, "speaker": "speaker_1"},
+        {"start": 5.35, "end": 10.0, "speaker": "speaker_2"},
+    ]
+
+    assert cli.smooth_diarization_segments(diarization) == diarization
+
+
+def test_local_cluster_cache_requires_current_engine_version() -> None:
+    old_meta = {"diarization_backend": "local-cluster"}
+    current_meta = {
+        "diarization_backend": "local-cluster",
+        "diarization_engine_version": cli.LOCAL_CLUSTER_ENGINE_VERSION,
+    }
+
+    assert cli.diarization_cache_is_compatible(old_meta, "local-cluster") is False
+    assert cli.diarization_cache_is_compatible(current_meta, "local-cluster") is True
+
+
+def test_reports_speaker_turn_fragmentation_rate() -> None:
+    assigned = [
+        {"start": 0.0, "end": 10.0, "speaker": "说话人A"},
+        {"start": 10.0, "end": 20.0, "speaker": "说话人A"},
+        {"start": 20.0, "end": 30.0, "speaker": "说话人B"},
+        {"start": 30.0, "end": 40.0, "speaker": "说话人B"},
+        {"start": 40.0, "end": 60.0, "speaker": "说话人A"},
+    ]
+
+    assert cli.speaker_turn_diagnostics(assigned, 60.0) == {
+        "speaker_turns": 3,
+        "speaker_count": 2,
+        "speaker_turns_per_minute": 3.0,
+    }

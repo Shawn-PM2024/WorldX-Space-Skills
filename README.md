@@ -9,7 +9,7 @@ WorldX-Space 号主维护的公开 AI Skills 合集。每个 skill 都放在独�
 | Skill | 用途 | 入口 |
 |---|---|---|
 | `kapuscinski-style-evaluator` | 面向中英文非虚构写作的编辑型评估 skill，用于判断文本是否接近卡普钦斯基式的观察和叙事方式，并给出具体练习建议；它是评估器，不是风格模仿生成器。 | [`SKILL.md`](./kapuscinski-style-evaluator/SKILL.md) |
-| `media-transcribe-public` | 本地优先的音视频转写 skill，将音频/视频转成 Markdown 笔记，支持本机 whisper.cpp、可选说话人区分、Codex 整理、Obsidian/本地 Markdown/有道兼容后端。 | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
+| `media-transcribe-public` | 本地优先的音视频转写 skill，支持 whisper.cpp 长音频并行与断点缓存、可选 sherpa-onnx 说话人区分、Codex 整理，以及 Obsidian/本地 Markdown/有道兼容后端。 | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
 | `practical-ppt` | 将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿；采用 HTML 视觉源稿、原生 PPTX 重建和交付前 QA 流程。 | [`SKILL.md`](./practical-ppt/SKILL.md) |
 
 ## 安装
@@ -73,7 +73,7 @@ WorldX-Space-Skills/
 ## 说明
 
 - `kapuscinski-style-evaluator` 只做写作评估和训练建议，不生成仿写长文。
-- `media-transcribe-public` 默认本地运行，不捆绑 FFmpeg、whisper.cpp、模型文件或任何笔记服务凭据；OpenAI、pyannote、有道等能力都需要显式开启。
+- `media-transcribe-public` 默认本地运行，不捆绑 FFmpeg、whisper.cpp、sherpa-onnx 模型文件或任何笔记服务凭据；OpenAI、pyannote、有道等远程能力都需要显式开启。
 - `practical-ppt` 的 PPTX 审计和生成脚本需要 Python 与 Node.js 运行环境。
 - 每个 skill 保留自己的 README、references、scripts、测试和可选 Agent 平台元数据。
 
@@ -88,7 +88,7 @@ Public AI skills maintained by WorldX Space. Each skill lives in its own top-lev
 | Skill | Purpose | Entry |
 |---|---|---|
 | `kapuscinski-style-evaluator` | An editorial evaluator for Chinese and English nonfiction prose. It judges whether a passage moves toward a Kapuscinski-like mode of observation and narration, then gives concrete practice suggestions. It is an evaluator, not a style-cloning generator. | [`SKILL.md`](./kapuscinski-style-evaluator/SKILL.md) |
-| `media-transcribe-public` | A local-first audio/video transcription skill that turns media into Markdown notes with local whisper.cpp, optional speaker diarization, Codex editorial cleanup, and local Markdown, Obsidian, or optional Youdao-compatible publishing. | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
+| `media-transcribe-public` | A local-first media transcription skill with parallel and resumable whisper.cpp jobs, optional sherpa-onnx diarization, Codex editorial cleanup, and local Markdown, Obsidian, or optional Youdao-compatible publishing. | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
 | `practical-ppt` | Turns outlines, markdown drafts, or structured notes into polished, readable, editable PowerPoint decks through an HTML-first visual draft, native PPTX reconstruction, and pre-delivery QA. | [`SKILL.md`](./practical-ppt/SKILL.md) |
 
 ## Install
@@ -152,6 +152,6 @@ WorldX-Space-Skills/
 ## Notes
 
 - `kapuscinski-style-evaluator` provides writing evaluation and practice guidance only. It does not generate long-form imitation.
-- `media-transcribe-public` runs locally by default and does not bundle FFmpeg, whisper.cpp, model files, or note-service credentials. OpenAI, pyannote, Youdao, and other external integrations must be enabled explicitly.
+- `media-transcribe-public` runs locally by default and does not bundle FFmpeg, whisper.cpp, sherpa-onnx model files, or note-service credentials. OpenAI, pyannote, Youdao, and other remote integrations must be enabled explicitly.
 - `practical-ppt` expects Python and Node.js for its PPTX audit and generation scripts.
 - Each skill keeps its own README, references, scripts, tests, and optional agent-platform metadata.

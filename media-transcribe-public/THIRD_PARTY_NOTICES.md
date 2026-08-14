@@ -9,7 +9,8 @@ Users install and license these separately:
 - whisper.cpp GGML model files
 - OpenAI Python SDK and OpenAI transcription services
 - opencc-python-reimplemented
-- numpy, scipy, scikit-learn
+- numpy, scipy, and sherpa-onnx
+- pyannote speaker-segmentation and 3D-Speaker embedding ONNX models used by the optional local diarization backend
 - pyannote.audio and pyannote/Hugging Face models
 - youdaonote CLI
 
