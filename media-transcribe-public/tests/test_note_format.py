@@ -25,7 +25,7 @@ def test_punctuate_zh_text_splits_long_asr_sentences() -> None:
     assert any(line.endswith("？") for line in lines)
 
 
-def test_speaker_transcript_preserves_segment_boundaries() -> None:
+def test_speaker_transcript_keeps_one_paragraph_per_speaker_turn() -> None:
     segments = [
         {"start": 0, "end": 1, "speaker": "A", "text": "我觉得当你越强烈的表达有观点的时候"},
         {"start": 1, "end": 2, "speaker": "A", "text": "你会被你说出的话限制"},
@@ -37,9 +37,21 @@ def test_speaker_transcript_preserves_segment_boundaries() -> None:
     lines = [line for line in result.splitlines() if line.strip()]
 
     assert lines[0].startswith("**A**：")
-    assert len(lines) >= 2
+    assert len(lines) == 1
     assert "，" in result
     assert "限制而如果" not in result
+
+
+def test_speaker_transcript_starts_new_paragraph_only_on_speaker_change() -> None:
+    segments = [
+        {"start": 0, "end": 1, "speaker": "A", "text": "第一句"},
+        {"start": 2, "end": 3, "speaker": "A", "text": "第二句"},
+        {"start": 4, "end": 5, "speaker": "B", "text": "第三句"},
+    ]
+
+    result = cli.speaker_transcript_from_segments(segments, "")
+
+    assert result == "**A**：第一句。第二句。\n\n**B**：第三句。"
 
 
 def test_existing_punctuation_long_sentence_is_split_again() -> None:

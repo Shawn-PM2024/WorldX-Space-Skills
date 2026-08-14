@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import unquote, urlparse
@@ -23,11 +24,15 @@ DEFAULT_POLISH_MODEL = "gpt-4.1-mini"
 DEFAULT_DIARIZATION_MODEL = "pyannote/speaker-diarization-3.1"
 DEFAULT_WHISPER_CPP_MODEL = Path.home() / ".cache/whisper-cpp/ggml-small.bin"
 FALLBACK_WHISPER_CPP_MODEL = Path.home() / ".cache/whisper-cpp/ggml-base.bin"
+DEFAULT_SPEAKER_SEGMENTATION_MODEL_NAME = "sherpa-onnx-pyannote-segmentation-3-0/model.onnx"
+DEFAULT_SPEAKER_EMBEDDING_MODEL_NAME = "3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx"
+LOCAL_CLUSTER_ENGINE_VERSION = "sherpa-onnx-pyannote3-3dspeaker-v1"
 MAX_SEGMENT_BYTES = 24 * 1024 * 1024
 DEFAULT_SEGMENT_SECONDS = 20 * 60
 BACKENDS = {"local-whisper-cpp", "openai"}
 DIARIZATION_BACKENDS = {"none", "local-cluster", "pyannote", "whisper-stereo"}
 NOTE_BACKENDS = {"none", "local", "obsidian", "youdao"}
+GPU_PREFLIGHT_CHOICES = {"auto", "off"}
 
 AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac", ".opus"}
 VIDEO_EXTS = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".flv", ".wmv", ".m4v"}
@@ -42,6 +47,28 @@ def default_cache_dir() -> Path:
         base = os.getenv("LOCALAPPDATA") or os.getenv("APPDATA")
         return Path(base).expanduser() / "media-transcribe-public" if base else Path.home() / ".cache/media-transcribe-public"
     return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "media-transcribe-public"
+
+
+def default_diarization_dir() -> Path:
+    configured = os.getenv("MEDIA_TRANSCRIBE_DIARIZATION_DIR")
+    return Path(configured).expanduser() if configured else default_cache_dir() / "diarization"
+
+
+def resolve_local_diarization_models(
+    segmentation_model: Optional[str] = None,
+    embedding_model: Optional[str] = None,
+) -> tuple[Path, Path]:
+    segmentation = Path(
+        segmentation_model
+        or os.getenv("MEDIA_TRANSCRIBE_SEGMENTATION_MODEL")
+        or default_diarization_dir() / DEFAULT_SPEAKER_SEGMENTATION_MODEL_NAME
+    ).expanduser()
+    embedding = Path(
+        embedding_model
+        or os.getenv("MEDIA_TRANSCRIBE_EMBEDDING_MODEL")
+        or default_diarization_dir() / DEFAULT_SPEAKER_EMBEDDING_MODEL_NAME
+    ).expanduser()
+    return segmentation, embedding
 
 
 def die(message: str, code: int = 1) -> None:
@@ -79,11 +106,43 @@ def ensure_openai_key(dry_run: bool = False) -> None:
     die("OPENAI_API_KEY is not set. Export it in your shell before transcribing.")
 
 
-def ensure_dependencies(note_backend: str, backend: str) -> None:
+def missing_python_modules(modules: List[str]) -> List[str]:
+    missing = []
+    for module in modules:
+        try:
+            __import__(module)
+        except ImportError:
+            missing.append(module)
+    return missing
+
+
+def ensure_dependencies(
+    note_backend: str,
+    backend: str,
+    diarization_backend: str = "none",
+    segmentation_model: Optional[str] = None,
+    embedding_model: Optional[str] = None,
+) -> None:
     require_command("ffmpeg")
     require_command("ffprobe")
     if backend == "local-whisper-cpp":
         require_command("whisper-cli")
+    if diarization_backend == "local-cluster":
+        missing = missing_python_modules(["numpy", "scipy", "sherpa_onnx"])
+        if missing:
+            die(
+                "Local diarization dependencies are missing: "
+                f"{', '.join(missing)}. Install the `diarization-cluster` extra or "
+                "choose --diarization-backend none."
+            )
+        model_paths = resolve_local_diarization_models(segmentation_model, embedding_model)
+        missing_models = [path for path in model_paths if not path.is_file()]
+        if missing_models:
+            die(
+                "Local diarization model files are missing: "
+                + ", ".join(str(path) for path in missing_models)
+                + ". Set model paths with CLI flags or MEDIA_TRANSCRIBE_* environment variables."
+            )
     if note_backend == "youdao":
         require_command("youdaonote")
         try:
@@ -164,7 +223,10 @@ def normalize_media(input_path: Path, work_dir: Path, *, channels: int = 1) -> P
     ext = input_path.suffix.lower()
     if ext not in AUDIO_EXTS and ext not in VIDEO_EXTS:
         die(f"Unsupported media format: {input_path.suffix}")
-    output = work_dir / f"{input_path.stem}.normalized.mp3"
+    output = work_dir / f"{input_path.stem}.ch{channels}.normalized.mp3"
+    if output.exists() and output.stat().st_size > 0:
+        print(f"Using cached normalized media: {output}", file=sys.stderr)
+        return output
     cmd = [
         "ffmpeg",
         "-y",
@@ -191,7 +253,17 @@ def segment_media(normalized_path: Path, work_dir: Path, segment_seconds: int) -
     info = ffprobe(normalized_path)
     if info["size"] <= MAX_SEGMENT_BYTES and info["duration"] <= segment_seconds:
         return [normalized_path]
-    pattern = work_dir / "segment_%03d.mp3"
+    segment_dir = work_dir / f"segments_{segment_seconds}"
+    segment_dir.mkdir(parents=True, exist_ok=True)
+    existing = sorted(segment_dir.glob("segment_*.mp3"))
+    if existing:
+        oversized = [path for path in existing if path.stat().st_size > MAX_SEGMENT_BYTES]
+        if oversized:
+            names = ", ".join(path.name for path in oversized[:3])
+            die(f"Cached segment exceeds 24MB; reduce --segment-seconds. Oversized: {names}")
+        print(f"Using cached media segments from {segment_dir}", file=sys.stderr)
+        return existing
+    pattern = segment_dir / "segment_%03d.mp3"
     cmd = [
         "ffmpeg",
         "-y",
@@ -210,7 +282,7 @@ def segment_media(normalized_path: Path, work_dir: Path, segment_seconds: int) -
         run(cmd, capture=True)
     except subprocess.CalledProcessError as exc:
         die(f"ffmpeg segmentation failed: {(exc.stderr or '').strip()}")
-    segments = sorted(work_dir.glob("segment_*.mp3"))
+    segments = sorted(segment_dir.glob("segment_*.mp3"))
     if not segments:
         die("ffmpeg did not produce any segments")
     oversized = [p for p in segments if p.stat().st_size > MAX_SEGMENT_BYTES]
@@ -271,6 +343,110 @@ def resolve_whisper_cpp_model(model_path: Optional[str]) -> Path:
     )
 
 
+def is_whisper_gpu_failure(exc: subprocess.CalledProcessError) -> bool:
+    detail = (exc.stderr or exc.stdout or "").strip()
+    return (
+        exc.returncode in (-11, 139)
+        or not detail
+        or "Metal" in detail
+        or "ggml_backend_metal" in detail
+    )
+
+
+def resolve_transcribe_jobs(
+    requested: str,
+    *,
+    segment_count: int,
+    duration_seconds: float,
+    cpu_count: Optional[int] = None,
+) -> int:
+    if requested != "auto":
+        try:
+            value = int(requested)
+        except ValueError:
+            die("--transcribe-jobs must be a positive integer or auto")
+        return max(1, min(value, max(segment_count, 1)))
+
+    if segment_count <= 1 or duration_seconds < 30 * 60:
+        return 1
+    cpus = cpu_count or os.cpu_count() or 4
+    jobs = max(1, min(3, cpus // 4))
+    return max(1, min(jobs, segment_count))
+
+
+def work_dir_for_job(job_dir: Path) -> Path:
+    work_dir = job_dir / "work"
+    work_dir.mkdir(parents=True, exist_ok=True)
+    return work_dir
+
+
+def prepare_whisper_preflight_sample(normalized_path: Path, work_dir: Path, seconds: int = 10) -> Path:
+    sample = work_dir / "whisper-gpu-preflight.mp3"
+    if sample.exists() and sample.stat().st_size > 0:
+        return sample
+    try:
+        run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(normalized_path),
+                "-t",
+                str(seconds),
+                "-c",
+                "copy",
+                str(sample),
+            ],
+            capture=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        die(f"ffmpeg preflight sample failed: {(exc.stderr or '').strip()}")
+    return sample
+
+
+def whisper_gpu_preflight_failed(
+    normalized_path: Path,
+    work_dir: Path,
+    *,
+    model_path: Optional[str],
+    language: Optional[str],
+    threads: int,
+) -> bool:
+    model = resolve_whisper_cpp_model(model_path)
+    sample = prepare_whisper_preflight_sample(normalized_path, work_dir)
+    out_base = work_dir / "whisper-gpu-preflight"
+    for suffix in (".txt", ".json"):
+        output = Path(str(out_base) + suffix)
+        if output.exists():
+            output.unlink()
+    cmd = [
+        "whisper-cli",
+        "-m",
+        str(model),
+        "-f",
+        str(sample),
+        "-l",
+        language or "auto",
+        "-t",
+        str(max(1, min(threads, 2))),
+        "-otxt",
+        "-oj",
+        "-ojf",
+        "-of",
+        str(out_base),
+        "-np",
+    ]
+    try:
+        run(cmd, capture=True)
+        return False
+    except subprocess.CalledProcessError as exc:
+        if is_whisper_gpu_failure(exc):
+            warn("whisper.cpp GPU/Metal preflight failed; this run will use --no-gpu.")
+            return True
+        detail = (exc.stderr or exc.stdout or "").strip()
+        die(f"whisper.cpp GPU preflight failed unexpectedly: {detail}")
+
+
 def transcribe_segments_whisper_cpp(
     segments: List[Path],
     *,
@@ -278,19 +454,50 @@ def transcribe_segments_whisper_cpp(
     language: Optional[str],
     threads: int,
     diarize: bool = False,
+    jobs: int = 1,
+    no_gpu: bool = False,
+    reuse_segment_cache: bool = True,
 ) -> tuple[str, List[Dict[str, Any]]]:
     model = resolve_whisper_cpp_model(model_path)
-    parts: List[str] = []
-    transcript_segments: List[Dict[str, Any]] = []
-    offset_ms = 0
-    for index, segment in enumerate(segments, start=1):
+    jobs = max(1, min(jobs, len(segments)))
+    durations_ms = [int(round(ffprobe(segment)["duration"] * 1000)) for segment in segments]
+    offsets_ms: List[int] = []
+    running_offset = 0
+    for duration_ms in durations_ms:
+        offsets_ms.append(running_offset)
+        running_offset += duration_ms
+
+    def run_whisper(cmd: List[str]) -> subprocess.CompletedProcess[str]:
+        try:
+            return run(cmd, capture=True)
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or "").strip()
+            if is_whisper_gpu_failure(exc) and "-ng" not in cmd and "--no-gpu" not in cmd:
+                warn("whisper.cpp GPU/Metal backend failed; retrying this segment with --no-gpu.")
+                try:
+                    return run([*cmd, "-ng"], capture=True)
+                except subprocess.CalledProcessError as retry_exc:
+                    retry_detail = (retry_exc.stderr or retry_exc.stdout or "").strip()
+                    die(f"whisper.cpp CPU retry failed: {retry_detail}")
+            die(f"whisper.cpp transcription failed: {detail}")
+
+    def transcribe_one(index: int, segment: Path, offset_ms: int) -> tuple[int, str, List[Dict[str, Any]]]:
         out_base = segment.with_suffix("")
         txt_path = Path(str(out_base) + ".txt")
         json_path = Path(str(out_base) + ".json")
-        if txt_path.exists():
-            txt_path.unlink()
-        if json_path.exists():
-            json_path.unlink()
+        if (
+            reuse_segment_cache
+            and txt_path.exists()
+            and txt_path.stat().st_size > 0
+            and json_path.exists()
+            and json_path.stat().st_size > 0
+        ):
+            print(f"Using cached transcription for segment {index}/{len(segments)}: {segment.name}", file=sys.stderr)
+            text = txt_path.read_text(encoding="utf-8", errors="replace")
+            return index, strip_timestamps(text), parse_whisper_json_segments(json_path, offset_ms=offset_ms)
+        for path in (txt_path, json_path):
+            if path.exists():
+                path.unlink()
         lang = language or "auto"
         cmd = [
             "whisper-cli",
@@ -309,24 +516,45 @@ def transcribe_segments_whisper_cpp(
             str(out_base),
             "-np",
         ]
+        if no_gpu:
+            cmd.append("-ng")
         if diarize:
             cmd.append("-di")
         print(
             f"Transcribing segment {index}/{len(segments)} locally with whisper.cpp: {segment.name}",
             file=sys.stderr,
         )
-        try:
-            completed = run(cmd, capture=True)
-        except subprocess.CalledProcessError as exc:
-            detail = (exc.stderr or exc.stdout or "").strip()
-            die(f"whisper.cpp transcription failed: {detail}")
+        completed = run_whisper(cmd)
         if txt_path.exists():
             text = txt_path.read_text(encoding="utf-8", errors="replace")
         else:
             text = completed.stdout
-        parts.append(strip_timestamps(text))
-        transcript_segments.extend(parse_whisper_json_segments(json_path, offset_ms=offset_ms))
-        offset_ms += int(round(ffprobe(segment)["duration"] * 1000))
+        return index, strip_timestamps(text), parse_whisper_json_segments(json_path, offset_ms=offset_ms)
+
+    results: Dict[int, tuple[str, List[Dict[str, Any]]]] = {}
+    if jobs == 1:
+        for index, segment in enumerate(segments, start=1):
+            _, text, parsed_segments = transcribe_one(index, segment, offsets_ms[index - 1])
+            results[index] = (text, parsed_segments)
+    else:
+        print(f"Running whisper.cpp with {jobs} parallel transcription jobs", file=sys.stderr)
+        with ThreadPoolExecutor(max_workers=jobs) as executor:
+            futures = {
+                executor.submit(transcribe_one, index, segment, offsets_ms[index - 1]): index
+                for index, segment in enumerate(segments, start=1)
+            }
+            for future in as_completed(futures):
+                index = futures[future]
+                text, parsed_segments = future.result()[1:]
+                results[index] = (text, parsed_segments)
+                print(f"Finished segment {index}/{len(segments)}", file=sys.stderr)
+
+    parts: List[str] = []
+    transcript_segments: List[Dict[str, Any]] = []
+    for index in range(1, len(segments) + 1):
+        text, parsed_segments = results[index]
+        parts.append(text)
+        transcript_segments.extend(parsed_segments)
     return "\n\n".join(part.strip() for part in parts if part.strip()), transcript_segments
 
 
@@ -425,19 +653,23 @@ def run_local_cluster_diarization(
     work_dir: Path,
     min_speakers: Optional[int],
     max_speakers: Optional[int],
+    segmentation_model: Optional[str] = None,
+    embedding_model: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """Best-effort local speaker clustering from Whisper segment time ranges."""
+    """Run local neural speaker segmentation, embedding, and clustering."""
     try:
         import numpy as np
-        from scipy.fftpack import dct
         from scipy.io import wavfile
-        from scipy.signal import spectrogram
-        from sklearn.cluster import AgglomerativeClustering
-        from sklearn.preprocessing import StandardScaler
+        import sherpa_onnx
     except ImportError as exc:
-        warn(f"Local clustering dependencies are missing ({exc}); skipping diarization.")
+        warn(f"Local diarization dependencies are missing ({exc}); skipping diarization.")
         return []
 
+    del transcript_segments  # Neural diarization must not inherit Whisper chunk boundaries.
+    segmentation_path, embedding_path = resolve_local_diarization_models(
+        segmentation_model,
+        embedding_model,
+    )
     wav_path = work_dir / "diarization-analysis.wav"
     try:
         run(
@@ -466,86 +698,151 @@ def run_local_cluster_diarization(
     peak = float(np.max(np.abs(samples)) or 1.0)
     samples = samples / peak
 
-    def hz_to_mel(hz: float) -> float:
-        return 2595.0 * np.log10(1.0 + hz / 700.0)
-
-    def mel_to_hz(mel: np.ndarray) -> np.ndarray:
-        return 700.0 * (10 ** (mel / 2595.0) - 1.0)
-
-    def mel_filterbank(n_fft: int = 512, n_mels: int = 24) -> np.ndarray:
-        mel_points = np.linspace(hz_to_mel(80), hz_to_mel(sample_rate / 2), n_mels + 2)
-        hz_points = mel_to_hz(mel_points)
-        bins = np.floor((n_fft + 1) * hz_points / sample_rate).astype(int)
-        filters = np.zeros((n_mels, n_fft // 2 + 1), dtype="float32")
-        for idx in range(1, n_mels + 1):
-            left, center, right = bins[idx - 1], bins[idx], bins[idx + 1]
-            if center <= left or right <= center:
-                continue
-            filters[idx - 1, left:center] = (np.arange(left, center) - left) / (center - left)
-            filters[idx - 1, center:right] = (right - np.arange(center, right)) / (right - center)
-        return filters
-
-    filters = mel_filterbank()
-
-    def feature_for(start: float, end: float) -> Optional[np.ndarray]:
-        start_i = max(0, int(start * sample_rate))
-        end_i = min(len(samples), int(end * sample_rate))
-        if end_i - start_i < sample_rate // 2:
-            return None
-        clip = samples[start_i:end_i]
-        freqs, _, spec = spectrogram(
-            clip,
-            fs=sample_rate,
-            window="hann",
-            nperseg=512,
-            noverlap=256,
-            nfft=512,
-            mode="magnitude",
-        )
-        power = spec ** 2
-        mel_energy = np.maximum(filters @ power, 1e-10)
-        mfcc = dct(np.log(mel_energy), type=2, axis=0, norm="ortho")[:13]
-        zcr = np.mean(np.abs(np.diff(np.signbit(clip))).astype("float32"))
-        energy = np.log(np.mean(clip ** 2) + 1e-8)
-        centroid = np.mean((freqs[:, None] * power).sum(axis=0) / (power.sum(axis=0) + 1e-8))
-        return np.concatenate(
-            [
-                mfcc.mean(axis=1),
-                mfcc.std(axis=1),
-                np.array([zcr, energy, centroid / (sample_rate / 2)], dtype="float32"),
-            ]
-        )
-
-    rows: List[Dict[str, Any]] = []
-    features: List[Any] = []
-    for segment in transcript_segments:
-        text = str(segment.get("text") or "").strip()
-        if not text:
-            continue
-        start = float(segment.get("start") or 0)
-        end = float(segment.get("end") or start)
-        feature = feature_for(start, end)
-        if feature is None:
-            continue
-        rows.append({"start": start, "end": end, "text": text})
-        features.append(feature)
-
-    if len(rows) < 2:
+    if sample_rate != 16000:
+        warn(f"Expected 16 kHz diarization audio, got {sample_rate} Hz.")
         return []
 
-    requested_min = min_speakers or 2
-    requested_max = max_speakers or requested_min
-    n_clusters = max(requested_min, min(requested_max, len(rows)))
-    n_clusters = min(n_clusters, len(rows))
-    if n_clusters < 2:
+    num_speakers = -1
+    if max_speakers:
+        num_speakers = max_speakers
+    elif min_speakers:
+        num_speakers = min_speakers
+
+    config = sherpa_onnx.OfflineSpeakerDiarizationConfig(
+        segmentation=sherpa_onnx.OfflineSpeakerSegmentationModelConfig(
+            pyannote=sherpa_onnx.OfflineSpeakerSegmentationPyannoteModelConfig(
+                model=str(segmentation_path),
+            ),
+        ),
+        embedding=sherpa_onnx.SpeakerEmbeddingExtractorConfig(
+            model=str(embedding_path),
+        ),
+        clustering=sherpa_onnx.FastClusteringConfig(
+            num_clusters=num_speakers,
+            threshold=0.5,
+        ),
+        min_duration_on=0.3,
+        min_duration_off=0.5,
+    )
+    if not config.validate():
+        warn("Local diarization configuration is invalid; check the ONNX model paths.")
         return []
 
-    matrix = StandardScaler().fit_transform(np.vstack(features))
-    labels = AgglomerativeClustering(n_clusters=n_clusters).fit_predict(matrix)
-    diarized = []
-    for row, label in zip(rows, labels):
-        diarized.append({"start": row["start"], "end": row["end"], "speaker": f"cluster_{int(label)}"})
-    return diarized
+    print(
+        "Running local sherpa-onnx diarization "
+        f"with {'automatic' if num_speakers == -1 else num_speakers} speaker clusters.",
+        file=sys.stderr,
+    )
+    diarizer = sherpa_onnx.OfflineSpeakerDiarization(config)
+    last_progress = -10
+
+    def progress_callback(processed: int, total: int) -> int:
+        nonlocal last_progress
+        progress = int(processed / max(total, 1) * 100)
+        bucket = progress // 10 * 10
+        if bucket >= last_progress + 10:
+            print(f"Diarization progress: {bucket}%", file=sys.stderr)
+            last_progress = bucket
+        return 0
+
+    try:
+        result = diarizer.process(samples, callback=progress_callback).sort_by_start_time()
+    except Exception as exc:
+        warn(f"Local sherpa-onnx diarization failed: {exc}")
+        return []
+
+    diarized = [
+        {
+            "start": float(segment.start),
+            "end": float(segment.end),
+            "speaker": f"cluster_{int(segment.speaker)}",
+        }
+        for segment in result
+        if float(segment.end) > float(segment.start)
+    ]
+    return smooth_diarization_segments(diarized)
+
+
+def smooth_diarization_segments(
+    segments: List[Dict[str, Any]],
+    *,
+    max_spike_seconds: float = 0.8,
+    max_gap_seconds: float = 0.25,
+) -> List[Dict[str, Any]]:
+    """Merge adjacent runs and remove very short enclosed label spikes."""
+    cleaned = [
+        {
+            "start": float(item["start"]),
+            "end": float(item["end"]),
+            "speaker": str(item["speaker"]),
+        }
+        for item in sorted(segments, key=lambda item: (item["start"], item["end"]))
+        if float(item["end"]) > float(item["start"])
+    ]
+    if not cleaned:
+        return []
+
+    index = 1
+    while index < len(cleaned) - 1:
+        previous, current, following = cleaned[index - 1 : index + 2]
+        duration = current["end"] - current["start"]
+        close_to_neighbors = (
+            current["start"] - previous["end"] <= max_gap_seconds
+            and following["start"] - current["end"] <= max_gap_seconds
+        )
+        if (
+            duration <= max_spike_seconds
+            and previous["speaker"] == following["speaker"]
+            and current["speaker"] != previous["speaker"]
+            and close_to_neighbors
+        ):
+            previous["end"] = max(previous["end"], following["end"])
+            del cleaned[index : index + 2]
+            index = max(1, index - 1)
+            continue
+        index += 1
+
+    merged: List[Dict[str, Any]] = []
+    for item in cleaned:
+        if (
+            merged
+            and merged[-1]["speaker"] == item["speaker"]
+            and item["start"] - merged[-1]["end"] <= max_gap_seconds
+        ):
+            merged[-1]["end"] = max(merged[-1]["end"], item["end"])
+        else:
+            merged.append(dict(item))
+    return merged
+
+
+def diarization_cache_is_compatible(cached_meta: Dict[str, Any], backend: str) -> bool:
+    if cached_meta.get("diarization_backend") != backend:
+        return False
+    if backend == "local-cluster":
+        return cached_meta.get("diarization_engine_version") == LOCAL_CLUSTER_ENGINE_VERSION
+    return True
+
+
+def speaker_turn_diagnostics(
+    segments: List[Dict[str, Any]],
+    duration_seconds: float,
+) -> Dict[str, Any]:
+    speakers = {str(item["speaker"]) for item in segments if item.get("speaker")}
+    turns = 0
+    previous: Optional[str] = None
+    for item in segments:
+        speaker = str(item.get("speaker") or "")
+        if not speaker:
+            continue
+        if speaker != previous:
+            turns += 1
+            previous = speaker
+    duration_minutes = max(duration_seconds / 60.0, 1.0 / 60.0)
+    return {
+        "speaker_turns": turns,
+        "speaker_count": len(speakers),
+        "speaker_turns_per_minute": round(turns / duration_minutes, 2),
+    }
 
 
 def normalize_speaker_labels(segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -592,7 +889,7 @@ def assign_speakers(
 
 def speaker_transcript_from_segments(segments: List[Dict[str, Any]], fallback_text: str) -> str:
     if not segments:
-        return punctuate_zh_text(fallback_text)
+        return single_paragraph_text(punctuate_zh_text(fallback_text))
 
     paragraphs: List[str] = []
     current_speaker: Optional[str] = None
@@ -603,13 +900,20 @@ def speaker_transcript_from_segments(segments: List[Dict[str, Any]], fallback_te
             continue
         speaker = segment.get("speaker") or "说话人?"
         if current_speaker and speaker != current_speaker and current_segments:
-            paragraphs.append(f"**{current_speaker}**：{punctuate_segment_group(current_segments)}")
+            turn_text = single_paragraph_text(punctuate_segment_group(current_segments))
+            paragraphs.append(f"**{current_speaker}**：{turn_text}")
             current_segments = []
         current_speaker = str(speaker)
         current_segments.append(dict(segment))
     if current_speaker and current_segments:
-        paragraphs.append(f"**{current_speaker}**：{punctuate_segment_group(current_segments)}")
-    return "\n\n".join(paragraphs).strip() or punctuate_zh_text(fallback_text)
+        turn_text = single_paragraph_text(punctuate_segment_group(current_segments))
+        paragraphs.append(f"**{current_speaker}**：{turn_text}")
+    return "\n\n".join(paragraphs).strip() or single_paragraph_text(punctuate_zh_text(fallback_text))
+
+
+def single_paragraph_text(text: str) -> str:
+    """Keep sentence punctuation while removing line breaks inside one speaker turn."""
+    return "".join(line.strip() for line in text.splitlines() if line.strip())
 
 
 def normalize_asr_spacing(text: str) -> str:
@@ -1078,6 +1382,9 @@ def load_cache(job_dir: Path) -> Dict[str, Optional[str]]:
         "note": (job_dir / "note.md").read_text(encoding="utf-8")
         if (job_dir / "note.md").exists()
         else None,
+        "meta": (job_dir / "meta.json").read_text(encoding="utf-8")
+        if (job_dir / "meta.json").exists()
+        else None,
     }
 
 
@@ -1106,12 +1413,32 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=max((os.cpu_count() or 4) - 2, 2))
     parser.add_argument("--segment-seconds", type=int, default=DEFAULT_SEGMENT_SECONDS)
     parser.add_argument(
+        "--transcribe-jobs",
+        default="auto",
+        help="Parallel local whisper.cpp segment jobs, or auto. Default: auto for long media",
+    )
+    parser.add_argument("--whisper-no-gpu", action="store_true", help="Pass -ng to whisper.cpp for every segment")
+    parser.add_argument(
+        "--gpu-preflight",
+        choices=sorted(GPU_PREFLIGHT_CHOICES),
+        default="auto",
+        help="Probe whisper.cpp GPU/Metal once and fall back to --no-gpu when needed",
+    )
+    parser.add_argument(
         "--diarization-backend",
         choices=sorted(DIARIZATION_BACKENDS),
         default="none",
         help="Local speaker diarization backend",
     )
     parser.add_argument("--diarization-model", default=DEFAULT_DIARIZATION_MODEL, help="pyannote diarization model")
+    parser.add_argument(
+        "--speaker-segmentation-model",
+        help="Path to the sherpa-onnx pyannote segmentation ONNX model",
+    )
+    parser.add_argument(
+        "--speaker-embedding-model",
+        help="Path to the sherpa-onnx speaker embedding ONNX model",
+    )
     parser.add_argument("--min-speakers", type=int, help="Minimum speaker count hint for diarization")
     parser.add_argument("--max-speakers", type=int, help="Maximum speaker count hint for diarization")
     parser.add_argument("--force", action="store_true", help="Ignore cached transcript/note")
@@ -1131,7 +1458,13 @@ def normalize_legacy_args(args: argparse.Namespace) -> argparse.Namespace:
 
 def main() -> None:
     args = normalize_legacy_args(parse_args())
-    ensure_dependencies(note_backend=args.note_backend, backend=args.backend)
+    ensure_dependencies(
+        note_backend=args.note_backend,
+        backend=args.backend,
+        diarization_backend=args.diarization_backend,
+        segmentation_model=args.speaker_segmentation_model,
+        embedding_model=args.speaker_embedding_model,
+    )
     validate_publish_target(args)
     if args.dry_run:
         if args.backend == "openai":
@@ -1144,9 +1477,9 @@ def main() -> None:
     cache_root = Path(args.cache_dir)
     cache_root.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory(prefix="media-transcribe-") as tmp:
-        work_dir = Path(tmp)
-        input_path = download_url(args.input, work_dir) if is_url(args.input) else Path(args.input).expanduser()
+    with tempfile.TemporaryDirectory(prefix="media-transcribe-download-") as tmp:
+        download_dir = Path(tmp)
+        input_path = download_url(args.input, download_dir) if is_url(args.input) else Path(args.input).expanduser()
         if not input_path.exists():
             die(f"Input file not found: {input_path}")
         input_path = input_path.resolve()
@@ -1154,6 +1487,7 @@ def main() -> None:
         file_hash = sha256_file(input_path)
         job_dir = cache_root / file_hash
         job_dir.mkdir(parents=True, exist_ok=True)
+        work_dir = work_dir_for_job(job_dir)
 
         media_info = ffprobe(input_path)
         meta = {
@@ -1167,13 +1501,27 @@ def main() -> None:
             "destination": args.destination,
             "backend": args.backend,
             "diarization_backend": args.diarization_backend,
+            "gpu_preflight": args.gpu_preflight,
+            "whisper_no_gpu_requested": args.whisper_no_gpu,
             "codex_format_required": True,
             "updated_at": datetime.now().isoformat(timespec="seconds"),
         }
 
         cached = load_cache(job_dir)
+        cached_meta = json.loads(cached["meta"]) if cached["meta"] else {}
+        diarization_cache_ok = bool(
+            cached["diarization"]
+            and not args.force
+            and diarization_cache_is_compatible(cached_meta, args.diarization_backend)
+        )
         has_cached_transcript = bool(cached["transcript"] and not args.force)
-        has_cached_note = bool(cached["note"] and not args.force and not args.no_polish)
+        has_cached_note = bool(
+            cached["note"]
+            and not args.force
+            and not args.no_polish
+            and cached_meta.get("diarization_backend") == args.diarization_backend
+            and (args.diarization_backend != "local-cluster" or diarization_cache_ok)
+        )
         needs_transcription = args.dry_run or not has_cached_transcript
         can_polish = False
         needs_polish = (
@@ -1192,8 +1540,32 @@ def main() -> None:
             normalize_channels = 2 if args.diarization_backend == "whisper-stereo" else 1
             normalized = normalize_media(input_path, work_dir, channels=normalize_channels)
             segments = segment_media(normalized, work_dir, args.segment_seconds)
+            effective_no_gpu = args.whisper_no_gpu
+            gpu_preflight_failed = False
+            if (
+                args.backend == "local-whisper-cpp"
+                and args.gpu_preflight == "auto"
+                and not effective_no_gpu
+            ):
+                gpu_preflight_failed = whisper_gpu_preflight_failed(
+                    normalized,
+                    work_dir,
+                    model_path=args.model_path,
+                    language=args.language,
+                    threads=args.threads,
+                )
+                effective_no_gpu = gpu_preflight_failed
+            transcribe_jobs = resolve_transcribe_jobs(
+                args.transcribe_jobs,
+                segment_count=len(segments),
+                duration_seconds=media_info["duration"],
+            )
             meta["normalized_bytes"] = normalized.stat().st_size
             meta["normalized_channels"] = normalize_channels
+            meta["work_dir"] = str(work_dir)
+            meta["transcribe_jobs"] = transcribe_jobs
+            meta["whisper_no_gpu_effective"] = effective_no_gpu
+            meta["gpu_preflight_failed"] = gpu_preflight_failed
             meta["segments"] = [
                 {"path": str(segment), "bytes": segment.stat().st_size}
                 for segment in segments
@@ -1227,6 +1599,9 @@ def main() -> None:
                     language=args.language,
                     threads=args.threads,
                     diarize=args.diarization_backend == "whisper-stereo",
+                    jobs=int(meta.get("transcribe_jobs") or 1),
+                    no_gpu=bool(meta.get("whisper_no_gpu_effective")),
+                    reuse_segment_cache=not args.force,
                 )
             if not transcript.strip():
                 die("Transcription returned empty text")
@@ -1237,7 +1612,8 @@ def main() -> None:
             )
 
         diarization_segments: List[Dict[str, Any]] = []
-        if cached["diarization"] and not args.force:
+        if diarization_cache_ok:
+            print("Using compatible cached diarization.", file=sys.stderr)
             diarization_segments = json.loads(cached["diarization"])
         elif args.diarization_backend == "pyannote":
             if normalized is None:
@@ -1262,6 +1638,8 @@ def main() -> None:
                 work_dir=work_dir,
                 min_speakers=args.min_speakers,
                 max_speakers=args.max_speakers,
+                segmentation_model=args.speaker_segmentation_model,
+                embedding_model=args.speaker_embedding_model,
             )
             (job_dir / "diarization.json").write_text(
                 json.dumps(diarization_segments, indent=2, ensure_ascii=False),
@@ -1281,8 +1659,23 @@ def main() -> None:
         assigned_segments = assign_speakers(transcript_segments, diarization_segments)
         speaker_text = speaker_transcript_from_segments(assigned_segments, transcript)
         (job_dir / "speaker_transcript.txt").write_text(speaker_text, encoding="utf-8")
+        speaker_diagnostics = speaker_turn_diagnostics(assigned_segments, media_info["duration"])
+        meta["diarization_segments"] = len(diarization_segments)
+        if args.diarization_backend == "local-cluster" and diarization_segments:
+            meta["diarization_engine_version"] = LOCAL_CLUSTER_ENGINE_VERSION
+        meta.update(speaker_diagnostics)
+        if speaker_diagnostics["speaker_turns_per_minute"] > 8:
+            warn(
+                "Speaker labels are unusually fragmented "
+                f"({speaker_diagnostics['speaker_turns_per_minute']} turns/minute); "
+                "review diarization before publishing."
+            )
+        (job_dir / "meta.json").write_text(
+            json.dumps(meta, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
-        if cached["note"] and not args.force and not args.no_polish:
+        if has_cached_note:
             print("Using cached Markdown note.", file=sys.stderr)
             note = cached["note"]
         elif args.no_polish or not can_polish:
