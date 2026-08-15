@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ultimate Revelation"
+  short_description: "从低密度长材料中提炼可反溯的高价值认知与底层原则体系"
+  default_prompt: "Use $ultimate-revelation 从这份长材料中提炼少数可反溯的高价值认知，并展示每条认知背后的原始内容。"
