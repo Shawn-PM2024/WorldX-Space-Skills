@@ -1,0 +1,89 @@
+{
+  "version": "1.1.0",
+  "routing": [
+    {
+      "id": "load-long-meeting",
+      "query": "总结这份两小时会议转写，只保留少数真正改变判断、且能回到原话的洞见。",
+      "expected": "load",
+      "reason": "长、低密度会议需要证据驱动的认知压缩。"
+    },
+    {
+      "id": "load-multi-source",
+      "query": "综合这三份互相矛盾的行业报告，找出最可靠的共同结论和分歧边界。",
+      "expected": "load",
+      "reason": "多来源、冲突证据需要来源隔离与反向审计。"
+    },
+    {
+      "id": "load-shallow-summary",
+      "query": "这份播客的普通总结太散了，请提炼 3 个有原始证据和推导链的关键认知。",
+      "expected": "load",
+      "reason": "用户明确需要少量可反溯洞见。"
+    },
+    {
+      "id": "forbidden-short-fact",
+      "query": "法国首都是哪里？",
+      "expected": "do_not_load",
+      "reason": "单一事实问答不需要认知压缩。"
+    },
+    {
+      "id": "forbidden-translation",
+      "query": "把这句话翻译成英文：今天下午三点开会。",
+      "expected": "do_not_load",
+      "reason": "简单转换任务没有长材料综合。"
+    },
+    {
+      "id": "forbidden-literal-transcript",
+      "query": "请逐字转写这个音频，保留所有口头禅和时间戳。",
+      "expected": "do_not_load",
+      "reason": "用户要逐字稿，不要压缩洞见。"
+    },
+    {
+      "id": "forbidden-exhaustive-minutes",
+      "query": "把会议按时间顺序整理成完整纪要，不要删掉任何议题或行动项。",
+      "expected": "do_not_load",
+      "reason": "任务追求完整覆盖而非少量认知。"
+    }
+  ],
+  "execution": [
+    {
+      "id": "number-is-a-heuristic",
+      "task": "提炼最重要的认知。",
+      "source": "演讲者称 AI 是人的 60 倍，依据是一天生成 60 篇文章；随后承认没有盲评、口径有问题，并说这个数字主要用于拉开计划的心理空间。",
+      "expected": [
+        "把 60 倍标为演讲者的启发式主张",
+        "把估算缺陷与数字放在同一证据簇",
+        "结论聚焦计划重估而非普遍生产率"
+      ],
+      "forbidden": [
+        "把 AI 效率是人的 60 倍写成已证事实"
+      ]
+    },
+    {
+      "id": "preserve-conflict",
+      "task": "总结访谈中的真正洞见。",
+      "source": "CEO 说远程办公让效率提高 30%；研发只看到两周内发版从 4 次到 6 次，其中 2 次是紧急修复；员工分别报告专注增加和跨部门决策变慢。",
+      "expected": [
+        "保留个人专注与团队协作之间的张力",
+        "指出发版次数不能单独证明效率",
+        "保留两周单公司样本边界"
+      ],
+      "forbidden": [
+        "用统一叙述抹平相反观察"
+      ]
+    },
+    {
+      "id": "honor-compact-format",
+      "task": "用不超过 200 字给出唯一最重要的认知，不要展示分析过程。",
+      "source": "五名新用户中三人在配网中断；完成绑定者 87% 当天使用核心功能；老用户均完成任务；同期服务器有两次超时但日志不足。",
+      "expected": [
+        "只输出一个核心判断",
+        "包含关键证据与样本边界",
+        "总长度不超过 200 个汉字"
+      ],
+      "forbidden": [
+        "机械输出三到七条",
+        "倾倒事实账本或候选簇"
+      ]
+    }
+  ]
+}

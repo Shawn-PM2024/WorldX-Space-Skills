@@ -11,7 +11,7 @@ WorldX-Space 号主维护的公开 AI Skills 合集。每个 skill 都放在独�
 | `kapuscinski-style-evaluator` | 面向中英文非虚构写作的编辑型评估 skill，用于判断文本是否接近卡普钦斯基式的观察和叙事方式，并给出具体练习建议；它是评估器，不是风格模仿生成器。 | [`SKILL.md`](./kapuscinski-style-evaluator/SKILL.md) |
 | `media-transcribe-public` | 本地优先的音视频转写 skill，支持 whisper.cpp 长音频并行与断点缓存、可选 sherpa-onnx 说话人区分、Codex 整理，以及 Obsidian/本地 Markdown/有道兼容后端。 | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
 | `practical-ppt` | 将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿；采用 HTML 视觉源稿、原生 PPTX 重建和交付前 QA 流程。 | [`SKILL.md`](./practical-ppt/SKILL.md) |
-| `ultimate-revelation` | 从对话、会议、音视频转写、综述和报道等长材料中提炼少数可反溯的高价值认知，并展示原始内容、推导链、底层原则与边界。 | [`SKILL.md`](./ultimate-revelation/SKILL.md) |
+| `ultimate-revelation` | 从对话、会议、音视频转写、综述和报道等长材料中提炼少数可反溯的高价值认知；1.1.0 采用“中心短、辐射厚”架构，并加入 gotchas、路由 eval 与产物校验。 | [`SKILL.md`](./ultimate-revelation/SKILL.md) |
 
 ## 安装
 
@@ -79,7 +79,10 @@ WorldX-Space-Skills/
     ├── SKILL.md
     ├── VERSION
     ├── agents/
-    └── references/
+    ├── evals/
+    ├── references/
+    ├── scripts/
+    └── tests/
 ```
 
 ## 说明
@@ -87,7 +90,7 @@ WorldX-Space-Skills/
 - `kapuscinski-style-evaluator` 只做写作评估和训练建议，不生成仿写长文。
 - `media-transcribe-public` 默认本地运行，不捆绑 FFmpeg、whisper.cpp、sherpa-onnx 模型文件或任何笔记服务凭据；OpenAI、pyannote、有道等远程能力都需要显式开启。
 - `practical-ppt` 的 PPTX 审计和生成脚本需要 Python 与 Node.js 运行环境。
-- `ultimate-revelation` 1.0.0 只负责认知压缩；处理音视频时先使用已有转写能力，时间戳和页码只用于定位，不能代替原始内容证据。
+- `ultimate-revelation` 1.1.0 只负责认知压缩；入口保持精简，复杂推导、真实失败模式和确定性检查按需加载。处理音视频时先使用已有转写能力，时间戳和页码只用于定位，不能代替原始内容证据。
 - 每个 skill 根据需要保留自己的 README、references、scripts、测试和可选 Agent 平台元数据。
 
 ---
@@ -103,7 +106,7 @@ Public AI skills maintained by WorldX Space. Each skill lives in its own top-lev
 | `kapuscinski-style-evaluator` | An editorial evaluator for Chinese and English nonfiction prose. It judges whether a passage moves toward a Kapuscinski-like mode of observation and narration, then gives concrete practice suggestions. It is an evaluator, not a style-cloning generator. | [`SKILL.md`](./kapuscinski-style-evaluator/SKILL.md) |
 | `media-transcribe-public` | A local-first media transcription skill with parallel and resumable whisper.cpp jobs, optional sherpa-onnx diarization, Codex editorial cleanup, and local Markdown, Obsidian, or optional Youdao-compatible publishing. | [`README.md`](./media-transcribe-public/README.md) / [`SKILL.md`](./media-transcribe-public/skill/media-transcribe-public/SKILL.md) |
 | `practical-ppt` | Turns outlines, markdown drafts, or structured notes into polished, readable, editable PowerPoint decks through an HTML-first visual draft, native PPTX reconstruction, and pre-delivery QA. | [`SKILL.md`](./practical-ppt/SKILL.md) |
-| `ultimate-revelation` | Extracts a small number of source-traceable, high-value insights from long conversations, meetings, transcripts, reviews, and reports, with original evidence, derivation chains, principles, and boundaries. | [`SKILL.md`](./ultimate-revelation/SKILL.md) |
+| `ultimate-revelation` | Extracts a few source-traceable insights from long conversations, meetings, transcripts, reviews, and reports. Version 1.1.0 uses a thin entry point with on-demand method, gotcha, eval, and validation resources. | [`SKILL.md`](./ultimate-revelation/SKILL.md) |
 
 ## Install
 
@@ -171,7 +174,10 @@ WorldX-Space-Skills/
     ├── SKILL.md
     ├── VERSION
     ├── agents/
-    └── references/
+    ├── evals/
+    ├── references/
+    ├── scripts/
+    └── tests/
 ```
 
 ## Notes
@@ -179,5 +185,5 @@ WorldX-Space-Skills/
 - `kapuscinski-style-evaluator` provides writing evaluation and practice guidance only. It does not generate long-form imitation.
 - `media-transcribe-public` runs locally by default and does not bundle FFmpeg, whisper.cpp, sherpa-onnx model files, or note-service credentials. OpenAI, pyannote, Youdao, and other remote integrations must be enabled explicitly.
 - `practical-ppt` expects Python and Node.js for its PPTX audit and generation scripts.
-- `ultimate-revelation` 1.0.0 focuses only on cognitive compression. Audio and video should be transcribed first, and timestamps or page numbers are locators rather than substitutes for source evidence.
+- `ultimate-revelation` 1.1.0 focuses only on cognitive compression. Its entry point stays lean while methods, real failure patterns, evals, and deterministic checks load on demand. Audio and video should be transcribed first, and timestamps or page numbers are locators rather than substitutes for source evidence.
 - Each skill keeps its own README, references, scripts, tests, and optional agent-platform metadata as needed.
