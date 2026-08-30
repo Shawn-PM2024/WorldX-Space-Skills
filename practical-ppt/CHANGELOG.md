@@ -2,6 +2,14 @@
 
 All notable changes to Practical PPT are documented here.
 
+## 1.1.0 - 2026-08-30
+
+- Added an Evidence-Led Editorial workflow for conference sharing, exhibition recaps, field reports, industry analysis, and photo-led case studies.
+- Added a representative-sample approval gate for complex, visually consequential, evidence-heavy, and long-form decks.
+- Added a compact design-lock contract with `anchor`, `dense`, and `breathing` page rhythm roles to reduce cross-slide drift.
+- Added evidence provenance classes, a default four-unit limit for photo/evidence pages, and explicit crop, blur, orientation, reuse, and claim-limit checks.
+- Added source-project-first rules for updating generated decks, rollback-copy guidance for in-place replacement, and stronger package, notes, and CJK preview verification.
+
 ## 1.0.5 - 2026-07-06
 
 - Added a Blue-Orange Performance Review style family for Chinese semiannual/annual review and 述职 decks, including Chinese font policy, evidence-media treatment, cover/ending rhythm, and blue/cyan/orange hierarchy rules.

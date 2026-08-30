@@ -11,6 +11,7 @@ Template types are style grammar, not fixed layouts to clone. For every new deck
 - **Dark AI Infrastructure**: dark technical style, cinematic contrast, low-key technical backgrounds, white text, timelines, architecture maps, team cards.
 - **Blue-White Corporate Tech**: light technology company style, glass panels, geometric motifs, structured contents, company/profile/product sections.
 - **Blue-Orange Performance Review**: Chinese semiannual/annual review style, white-blue structure, warm milestone accents, evidence photos, product/report proof pages, polished cover and closing rhythm.
+- **Evidence-Led Editorial**: conference sharing, field reports, exhibition recaps, and industry analysis built around source photos, explicit provenance, claim/evidence pairing, and editorial page rhythm.
 - **Adaptive Business Modular**: topic-routed business template system, modular section rhythm, remixable layouts, strong narrative skeleton.
 - **Editable Diagram Grammar**: native-shape diagram system for list, process, cycle, hierarchy, relationship, matrix, pyramid, and picture/timeline diagrams.
 - **Executive Proposal System**: board/shareholder proposal style, proof-object-first slides, premium sparse cover, strong decision narrative, native visual assets.
@@ -119,6 +120,30 @@ Common failures to avoid:
 - Defaulting to Arial/Segoe UI for Chinese-heavy decks.
 - Producing every page as pale card grids with no media, no dark emphasis page, and no visual proof.
 - Treating photos as decoration. Each image should anchor a claim, a product state, a scenario, or a document proof point.
+
+### Evidence-Led Editorial
+
+Use for conference sharing, exhibition or field recaps, industry observations, research trips, photo-led case studies, and presentations where the speaker's source material includes firsthand images or documents.
+
+- Background: warm white or quiet neutral for most pages, with dark anchor pages used sparingly for section turns and conclusions.
+- Palette: one dark structural color, one warm editorial accent, and restrained grays. Accent color marks judgments, evidence classes, and transitions rather than decorating every object.
+- Typography: editorial display face or serif for short titles when appropriate, Chinese UI sans serif for body text, and a compact monospace only for technical labels. Keep captions visibly secondary but readable.
+- Layouts: opening thesis, chapter anchor, argument framework, comparison table, full-bleed or split-photo evidence page, 2x2 evidence matrix, asymmetric editorial collage, claim/evidence pair, chapter synthesis, and quiet close.
+- Proof objects: evidence map, route comparison, editorial timeline, thesis ladder, annotated photograph, provenance-labeled evidence matrix, field-observation cluster, and claim-to-implication bridge.
+- Media: user-owned/local photos are primary. Authoritative public material is visibly labeled. Generated images appear only on conceptual pages and must not look like documentary proof.
+- Rhythm: assign slides `anchor`, `dense`, or `breathing`. Let evidence pages breathe; do not compress every photo into the same card grid.
+- Evidence pages: use at most 4 independent visual units by default, preserve useful signage and product context, and match portrait/landscape frames to source orientation.
+- Narrative: photos answer “what was visible”; text answers “why it matters”; caveats answer “what this does not prove.”
+
+For this type, read [evidence-led-editorial-workflow.md](evidence-led-editorial-workflow.md) before building the slide plan.
+
+Common failures to avoid:
+
+- Treating filenames, logos, or booth visibility as proof of claims not visible in the asset.
+- Mixing firsthand photos and public-source material without provenance labels.
+- Enlarging low-resolution images until the subject or sign becomes unreadable.
+- Using more images to compensate for a weak argument.
+- Reusing the same evidence across multiple pages without a deliberate detail-level reason.
 
 ### Red Strategic Planning
 

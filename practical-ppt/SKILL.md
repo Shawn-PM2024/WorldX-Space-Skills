@@ -15,6 +15,7 @@ This skill is not a prompt for "make a pretty PPT". It is a workflow package. Ke
 
 - [references/style-library.md](references/style-library.md): reusable style families and visual grammars.
 - [references/proposal-proof-objects.md](references/proposal-proof-objects.md): executive proposal proof-object patterns.
+- [references/evidence-led-editorial-workflow.md](references/evidence-led-editorial-workflow.md): field-report, conference-sharing, industry-analysis, and photo-evidence workflow.
 - [references/qa-rubric.md](references/qa-rubric.md): blocking QA gate.
 - [references/skill-principles.md](references/skill-principles.md): maintenance principles for evolving this skill.
 - `scripts/`: deterministic audit, conversion, and QA helpers. Prefer calling them over re-implementing checks in prose.
@@ -38,6 +39,7 @@ If the request is ambiguous, infer the closest deck task and state the assumptio
 - Default required pages: cover and ending slide.
 - Default readability floor: normal PPT text at least 12pt; HTML text at least 16px on a 1600x900 canvas.
 - Default line spacing: at least single line spacing; prefer 1.15-1.35 for dense Chinese body copy.
+- Default complex-deck gate: for visually consequential, evidence-heavy, or long-form decks, build 3-4 representative slides and obtain direction approval before full production unless the user explicitly asks for uninterrupted one-pass execution.
 - Default QA stance: any text overflow, overlap, illegible small text, broken style frame, unsupported claim, or non-editable core text is blocking until fixed or explicitly accepted by the user.
 - Default repair path: revise HTML/spec first, then regenerate PPTX, then rerun checks.
 
@@ -88,10 +90,21 @@ For `benchmark-compare` mode:
 - Create a small style brief naming: topic, audience, selected reference grammar, deliberate modifications, and what must not be copied.
 - For Chinese business decks, define the font policy before drawing. Prefer a Chinese UI font stack such as `PingFang SC`, `Microsoft YaHei`, `Noto Sans CJK SC`, or the supplied template's Chinese font. Do not default to Arial/Segoe UI for Chinese-heavy pages unless matching a user template.
 - For review, report, product, case, or portfolio decks, define the media/evidence policy: which slides need product screenshots, photos, document snapshots, diagrams, logos supplied by the user, or native schematic stand-ins. A deck with only boxes and text should be treated as incomplete when visual evidence is available.
+- For conference sharing, field reports, industry analysis, exhibition/event recaps, or decks built from user photos, read [references/evidence-led-editorial-workflow.md](references/evidence-led-editorial-workflow.md). Build an evidence map before drawing: source, provenance class, claim supported, orientation, reuse status, and target slide.
+- Use this evidence priority: user-owned/local evidence first, authoritative external evidence second, generated or illustrative media only for concepts that cannot be shown faithfully. Label `现场证据`, `公开资料`, and `待确认` distinctly; never let layout imply that public material is a user-shot photo.
 - Maintain a trace table: source outline item -> slide number -> treatment (`kept`, `merged`, `split`, `expanded`, or `omitted-with-reason`).
 - Avoid more than 3 consecutive body slides with the same table/card/list layout. Vary the proof object shape so the contact sheet has visible rhythm.
+- Assign every slide one rhythm role: `anchor` for decisive thesis/section pages, `dense` for comparison or structured evidence, and `breathing` for visual proof or transition. The sequence should vary intentionally instead of alternating layouts mechanically.
+- Write a compact `deck-design-lock.md` before full production. It must lock canvas, palette, typography, icon policy, image hierarchy, page chrome, rhythm role per slide, and any source/template constraints. Re-check it before authoring each slide so a long deck does not drift after context compression.
 
-4. Draw the deck as a webpage.
+4. Pass the representative sample gate when required.
+
+- For complex, visually consequential, evidence-heavy, or long-form decks, build 3-4 representative slides first: normally a cover, a claim/narrative page, a dense diagram/comparison page, and an evidence/photo page.
+- Render the sample as a contact sheet and inspect each sample slide at full size. Confirm typography, palette, density, image treatment, proof-object grammar, and editability.
+- Present the sample and the recommended direction as one approval point. After approval, lock the accepted decisions in `deck-design-lock.md` and continue without repeated stylistic questions.
+- Skip this gate only for narrow edits, simple short decks, strict template fills, or when the user explicitly requests uninterrupted one-pass production.
+
+5. Draw the deck as a webpage.
 
 - Use a 16:9 slide canvas by default: `.slide { width: 1600px; height: 900px; }`.
 - Put each slide in one `.slide` element. Use semantic headings (`h1`, `h2`) and stable data attributes where useful.
@@ -102,9 +115,11 @@ For `benchmark-compare` mode:
 - Build reusable visual assets as native/vector grammar: dot grids, thin rules, badges, stage labels, dividers, rings, chevrons, ladders, funnels, and schematic icons. Do not rely on flat card grids for every slide.
 - Make cover and ending slides feel intentional, not like body slides with larger text. Use restrained hero spacing, stable brand/project marks when supplied, a single decisive title block, and subtle motif geometry or media.
 - Use accent colors as signals. In blue-white business decks, keep deep blue for primary hierarchy, cyan/light blue for structure, and a warm accent such as orange only for milestones, warnings, current-state markers, or key numbers.
+- For evidence-led pages, let images prove what happened and let text explain what it means. Use one claim above the evidence, short captions on or beside it, and a restrained interpretation or caveat.
+- Keep photo/evidence pages to at most 4 independent visual units by default. Match image orientation to the frame, avoid stretching, and change the layout or crop when the subject becomes too small or blurry. Do not reuse the same photo as evidence on multiple slides unless the second use reveals a different detail.
 - Check the HTML in a browser before export. The webpage is the visual source of truth.
 
-5. Build an editable PPTX.
+6. Build an editable PPTX.
 
 - Default deliverable must use native editable PowerPoint text and shapes. Use a slide-spec JSON and the bundled editable export script when suitable:
 
@@ -116,7 +131,7 @@ node scripts/spec_to_editable_pptx.mjs deck-spec.json deck.pptx
 - If a slide needs visual detail that the spec script cannot express, use the Presentations/artifact-tool workflow or pptxgenjs directly to create editable objects rather than embedding a screenshot.
 - In editable exports, normal text must be at least 12pt and line spacing must be at least single. When content does not fit, split the slide, shorten copy, enlarge the container, or change the layout. Do not use PowerPoint auto-shrink as a final fix.
 
-6. Run PPT checks and revise.
+7. Run PPT checks and revise.
 
 - Run `scripts/check_html_slides.mjs` on the HTML source before final export. The default minimum is 16px; do not lower it unless the user explicitly accepts smaller text.
 - Run `scripts/check_pptx_text.py` on the final PPTX:
@@ -138,15 +153,23 @@ python3 scripts/check_pptx_structure.py deck.pptx --output pptx-structure-qa.jso
 ```
 
 - Inspect a rendered contact sheet before delivery. Automated checks do not replace visual review.
+- Inspect every representative slide and every photo/evidence slide at full size. Check subject recognition, blur after scaling, crop loss, aspect-ratio distortion, duplicate use, caption readability, and provenance labeling.
 - Verify editability: PPTX should contain real text runs and editable shapes for normal content. Screenshots may be used only for non-editable illustrative media, not core slide text.
+- Verify package integrity, slide count, and speaker-note count when notes are part of the deliverable. If the office-rendered PDF substitutes fonts or loses CJK text, deliver a clearly labeled visual-fidelity preview made from verified slide renders instead of presenting the broken PDF as authoritative.
 - Use [references/qa-rubric.md](references/qa-rubric.md) as the blocking gate. Do not deliver if there are obvious overlap, overflow, style breakage, outline mismatch, or content-reasoning problems.
 - Iterate the HTML first, then regenerate PPTX.
 
-7. Package the handoff.
+8. Package the handoff.
 
 - Return the final PPTX path, HTML preview path, slide spec path, QA report paths, and mode assumptions.
 - Mention whether the PPTX is editable and what content, if any, is intentionally image-backed.
 - Keep unresolved assumptions short and concrete.
+
+## Existing Deck Updates
+
+- Before editing an existing PPTX, inspect whether its HTML, SVG, slide spec, or generator project still exists. When it does, edit the source project and regenerate the deck so typography, notes, layout logic, and future edits stay coherent.
+- Use direct PPTX object edits only when the source project is unavailable or the requested change is genuinely local.
+- When replacing an existing user file in place, keep a timestamped rollback copy unless the user explicitly declines a backup.
 
 ## Design Bar
 
@@ -167,6 +190,10 @@ These are failure-derived constraints. Treat them as higher priority than generi
 - Do not make the whole deck a sequence of card grids. If 3 body slides in a row share the same layout signature, redesign at least one slide.
 - Do not ship Chinese-heavy decks with default Latin UI fonts when the output is meant to look locally polished.
 - Do not make review/report decks entirely text-and-shape based when the content naturally has proof photos, screenshots, documents, product images, or user-supplied visual evidence.
+- Do not mix user-shot photos, public-source images, generated visuals, and unverified claims without visible provenance distinctions.
+- Do not put more than 4 independent evidence units on a photo page by default; split the page or enlarge the strongest evidence.
+- Do not proceed from a representative sample to a complex full deck until the sample direction is approved, unless the user explicitly chose uninterrupted one-pass production.
+- Do not patch a source-generated deck only at the PPTX layer when the source project is available and the change belongs in that source.
 - Do not copy a template literally. Use its grammar, then adapt colors, motifs, proof objects, and media treatment to the topic.
 - Do not shrink text to solve overflow. Split, compress, or change the proof object.
 - Do not let decorative images replace proof. Every substantial slide needs a claim and a proof object.

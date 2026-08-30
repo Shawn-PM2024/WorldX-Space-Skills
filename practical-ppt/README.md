@@ -2,7 +2,7 @@
 
 Practical PPT 是一个 Codex skill，用于将 PPT 提纲、Markdown 草稿或结构化笔记转换为美观、可读、可编辑的 PowerPoint 演示文稿。
 
-当前版本：`1.0.5`
+当前版本：`1.1.0`
 
 English version: [English](#english)
 
@@ -18,6 +18,7 @@ English version: [English](#english)
   - `user-template`：先审计用户提供的模板 PPT，再学习其视觉语法并适配到新主题。
 - 支持 `benchmark-compare`：对比另一个 PPT 输出，先分析叙事、样式、proof object、可读性和可编辑性差距，再重建。
 - 内置中文述职/半年度汇报样式规则，强调中文字体、证据图片、蓝白结构、橙色节点提示、封面/结束页节奏和 contact sheet 多样性。
+- 内置证据驱动编辑型演示工作流：现场照片优先、证据来源分级、代表性样稿确认、三档页面节奏、照片清晰度与裁切专项检查。
 - 交付前执行 QA，包括文字溢出、重叠、越界、小字号、样式一致性、提纲匹配和内容合理性。
 
 ### 仓库结构
@@ -30,6 +31,7 @@ English version: [English](#english)
 │   └── openai.yaml
 ├── references/
 │   ├── proposal-proof-objects.md
+│   ├── evidence-led-editorial-workflow.md
 │   ├── qa-rubric.md
 │   ├── skill-principles.md
 │   └── style-library.md
@@ -118,12 +120,13 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 - PPTX text QA，没有 12pt 以下字号、缺失/低于单倍行距、估算溢出、越界或疑似重叠问题。
 - PPTX structure QA，没有过密页面、连续重复版式、缺少 proof object 的正文页；在报告/述职场景下，没有缺失证据媒体或中文字体退化问题。
 - 缩略图总览人工检查。
+- 复杂或证据密集型演示先完成 3-4 页代表性样稿确认；证据页默认不超过 4 个独立视觉单元，并逐页检查来源、裁切、模糊和重复使用。
 - PPTX 可编辑性检查，确认存在真实文本节点和可编辑图形。
 - 根据 `references/qa-rubric.md` 做样式和内容审查。
 
 ### 版本管理
 
-本仓库使用语义化版本。当前发布版本为 `1.0.5`。
+本仓库使用语义化版本。当前发布版本为 `1.1.0`。
 
 版本说明见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -131,7 +134,7 @@ node scripts/html_to_pptx.mjs deck.html deck-raster-backup.pptx
 
 Practical PPT is a Codex skill for creating polished, readable, editable PowerPoint decks from outlines, markdown drafts, and structured notes.
 
-Current version: `1.0.5`
+Current version: `1.1.0`
 
 ### What It Does
 
@@ -143,6 +146,7 @@ Current version: `1.0.5`
   - `user-template`: audit a supplied template deck first, then adapt its visual grammar to the new topic.
 - Supports `benchmark-compare`: compare another deck output first, then rebuild based on narrative, style, proof-object, readability, and editability gaps.
 - Includes Chinese performance-review/report style rules for CJK fonts, evidence media, blue-white structure, orange milestone accents, cover/ending rhythm, and contact-sheet variety.
+- Includes an evidence-led editorial workflow with provenance classes, a representative-sample gate, anchor/dense/breathing page rhythm, and full-size photo crop/clarity review.
 - Runs QA before delivery, including text overflow, overlap, out-of-bounds elements, small text, style consistency, outline matching, and content reasonableness.
 
 ### Repository Layout
@@ -155,6 +159,7 @@ Current version: `1.0.5`
 │   └── openai.yaml
 ├── references/
 │   ├── proposal-proof-objects.md
+│   ├── evidence-led-editorial-workflow.md
 │   ├── qa-rubric.md
 │   ├── skill-principles.md
 │   └── style-library.md
@@ -248,6 +253,6 @@ Before delivery, Practical PPT expects:
 
 ### Versioning
 
-This repository uses semantic versioning. The current release is `1.0.5`.
+This repository uses semantic versioning. The current release is `1.1.0`.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.

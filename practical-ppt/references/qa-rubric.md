@@ -53,6 +53,11 @@ Blocking issues:
 - most body slides use the same table/card/list grammar, making the deck fail the contact-sheet rhythm test
 - substantial slides contain no recognizable proof object beyond text boxes
 - review, report, product, case, or portfolio decks contain no media/evidence pages when relevant photos, screenshots, documents, product renders, or supplied images are available
+- evidence/photo pages contain more than 4 independent visual units without a legible gallery rationale, causing subjects and captions to become too small
+- user-owned photos, public-source material, generated visuals, and unverified claims are presented with no visible provenance distinction
+- source images are stretched into mismatched frames, cropped until the identifying subject is lost, enlarged beyond useful clarity, or reused accidentally
+- a complex, visually consequential, evidence-heavy, or long-form deck proceeds to full production without an approved representative sample, unless the user explicitly chose uninterrupted one-pass execution
+- a source-generated deck is patched only at the PPTX layer even though its maintainable HTML/SVG/spec project is available
 - in `user-template` mode, the output either copies the template content too literally or fails to preserve the template's visual grammar
 
 Checks:
@@ -64,6 +69,9 @@ Checks:
 - verify each slide has stable margins and alignment
 - confirm charts, tables, diagrams, and cards share a consistent grammar
 - confirm each substantial slide has a named proof object and that no more than 3 consecutive body slides share the same layout signature
+- confirm `deck-design-lock.md` exists for non-trivial decks and that palette, typography, image treatment, page chrome, and `anchor`/`dense`/`breathing` roles match the rendered result
+- for evidence-led decks, review the evidence map and verify provenance, orientation, reuse status, supported claim, and claim limits for every used asset
+- inspect each representative sample and every photo/evidence slide at full size for subject recognition, crop loss, blur after scaling, duplicate use, and caption readability
 - for Chinese review/report decks, run `scripts/check_pptx_structure.py deck.pptx --min-media-files 1 --warn-ascii-fonts-for-cjk --fail-on-review` when media evidence should exist
 
 ## 4. Outline Match
@@ -87,6 +95,7 @@ Blocking issues:
 
 - a slide has only decorative text and no useful claim, proof object, or decision value
 - claims are stronger than the evidence shown
+- photo presence, booth visibility, or a visible product label is treated as proof of market scale, commercial success, technical superiority, or causality
 - data labels, units, dates, company names, or technical terms are inconsistent
 - diagrams look plausible but do not explain a real relationship
 - AI-generated filler replaces the user's actual point
@@ -96,6 +105,7 @@ Checks:
 - each slide should answer: "What should the audience understand or decide after this page?"
 - each proof object should support the slide claim directly
 - for current or factual claims, keep source notes and avoid invented metrics
+- for evidence-led chapters, verify the sequence makes the claim, shows the evidence, interprets it, and states material uncertainty
 
 ## QA Report Format
 
