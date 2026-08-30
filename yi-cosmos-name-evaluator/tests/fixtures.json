@@ -1,0 +1,207 @@
+{
+  "anchors": [
+    {
+      "label": "ling-shi",
+      "request": {
+        "name": "赫灵灵识",
+        "object_type": "product",
+        "industries": ["人工智能", "大健康"],
+        "scored_segment": "赫灵灵识",
+        "brand_prefix": "赫灵",
+        "distinctive_segment": "灵识",
+        "parent_company": "赫灵未来智慧科技（成都）有限公司",
+        "positioning": "人工智能与大健康产品名称",
+        "company": {
+          "established_on": "2026-02-12",
+          "established_at": null,
+          "location": "四川成都"
+        },
+        "legal_representative": {
+          "name": "刘勇",
+          "gender": "男",
+          "birth_date": null,
+          "birth_time": null,
+          "birthplace": "四川眉山"
+        }
+      },
+      "judgments": {
+        "five_elements": {
+          "score": 60,
+          "rationale": "感知与认知意象适合人工智能，但名称整体偏灵性表达，面向大健康时五行与业务落点不够明确。",
+          "uncertainty": "medium",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "人工智能契合度高于大健康契合度。"
+            }
+          ]
+        },
+        "hexagram": {
+          "score": 72,
+          "rationale": "当前字形与传统字形所得卦象一中一优，综合为偏吉但并非无保留推荐。",
+          "uncertainty": "medium",
+          "evidence": [
+            {
+              "type": "traditional_rule",
+              "claim": "依据脚本展示的上下卦、动爻与本地卦名解释进行区间判断。",
+              "source": "references/methodology.md"
+            }
+          ]
+        },
+        "meaning_allusion": {
+          "score": 78,
+          "rationale": "灵识具有感知、认知和智能联想，但也可能被理解为玄学或宗教语汇，商业语义存在轻度歧义。",
+          "uncertainty": "medium",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "正向智能联想与潜在玄学歧义并存。"
+            }
+          ]
+        },
+        "industry_positioning": {
+          "score": 80,
+          "rationale": "对人工智能的感知与认知定位较强，对大健康的直接关联较弱。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "双行业适配不均衡。"
+            }
+          ]
+        },
+        "sound_form": {
+          "score": 84,
+          "rationale": "四字结构紧凑、读音顺畅，重复的灵字强化记忆，但口头传播时两个灵字可能发生漏读。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "节奏和辨识度较好，存在重复字漏读风险。"
+            }
+          ]
+        },
+        "brand_synergy": {
+          "score": 90,
+          "rationale": "完整保留赫灵前缀，并以灵识形成同一品牌家族内的功能化命名。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "与赫灵母品牌具有高一致性。"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "target": 72,
+        "minimum": 69,
+        "maximum": 75
+      }
+    },
+    {
+      "label": "ling-shu",
+      "request": {
+        "name": "赫灵灵枢",
+        "object_type": "product",
+        "industries": ["人工智能", "大健康"],
+        "scored_segment": "赫灵灵枢",
+        "brand_prefix": "赫灵",
+        "distinctive_segment": "灵枢",
+        "parent_company": "赫灵未来智慧科技（成都）有限公司",
+        "positioning": "人工智能与大健康产品名称",
+        "company": {
+          "established_on": "2026-02-12",
+          "established_at": null,
+          "location": "四川成都"
+        },
+        "legal_representative": {
+          "name": "刘勇",
+          "gender": "男",
+          "birth_date": null,
+          "birth_time": null,
+          "birthplace": "四川眉山"
+        }
+      },
+      "judgments": {
+        "five_elements": {
+          "score": 75,
+          "rationale": "枢具有枢纽、中枢和统摄意象，能承接人工智能控制核心与大健康中枢概念，结构流通性较好。",
+          "uncertainty": "medium",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "中枢意象能同时连接两个目标行业。"
+            }
+          ]
+        },
+        "hexagram": {
+          "score": 90,
+          "rationale": "当前市场字形所得卦象表现突出；传统字形存在敏感性，但综合仍属于明显偏吉区间。",
+          "uncertainty": "medium",
+          "evidence": [
+            {
+              "type": "traditional_rule",
+              "claim": "依据脚本展示的上下卦、动爻与本地卦名解释进行区间判断。",
+              "source": "references/methodology.md"
+            }
+          ]
+        },
+        "meaning_allusion": {
+          "score": 100,
+          "rationale": "灵枢既有关键枢纽之义，又直接对应《黄帝内经·灵枢》的经典名称，文化辨识度和吉意都很强。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "classical_source",
+              "claim": "《灵枢》为《黄帝内经》的组成部分。",
+              "source": "https://zh.wikisource.org/wiki/黃帝內經/靈樞"
+            },
+            {
+              "type": "model_judgment",
+              "claim": "枢纽与中枢意象具有强商业正向含义。"
+            }
+          ]
+        },
+        "industry_positioning": {
+          "score": 100,
+          "rationale": "灵枢同时连接智能系统的核心枢纽与大健康经典语境，双行业定位高度统一。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "人工智能与大健康两条业务语义均得到直接支持。"
+            }
+          ]
+        },
+        "sound_form": {
+          "score": 92,
+          "rationale": "读音简洁稳健，枢字具有较强识别度；重复灵字仍存在极轻微的口头漏读风险。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "音形传播表现优秀。"
+            }
+          ]
+        },
+        "brand_synergy": {
+          "score": 92,
+          "rationale": "完整延续赫灵前缀，灵枢又具备可独立传播的产品核心词。",
+          "uncertainty": "low",
+          "evidence": [
+            {
+              "type": "model_judgment",
+              "claim": "母品牌一致性与子产品独立性兼具。"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "target": 90,
+        "minimum": 87,
+        "maximum": 93
+      }
+    }
+  ]
+}

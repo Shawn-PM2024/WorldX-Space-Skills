@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "modulo_mapping": {
+    "1": {"name": "乾", "symbol": "☰", "element": "金"},
+    "2": {"name": "兑", "symbol": "☱", "element": "金"},
+    "3": {"name": "离", "symbol": "☲", "element": "火"},
+    "4": {"name": "震", "symbol": "☳", "element": "木"},
+    "5": {"name": "巽", "symbol": "☴", "element": "木"},
+    "6": {"name": "坎", "symbol": "☵", "element": "水"},
+    "7": {"name": "艮", "symbol": "☶", "element": "土"},
+    "0": {"name": "坤", "symbol": "☷", "element": "土"}
+  }
+}

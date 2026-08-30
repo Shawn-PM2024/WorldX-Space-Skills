@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "method": "A transparent calibration table synthesized from common 81-number commercial naming classifications; it is a model configuration, not a historical or scientific fact.",
+  "groups": {
+    "excellent": {
+      "label": "吉",
+      "score": 94,
+      "numbers": [1, 3, 5, 6, 7, 8, 11, 13, 15, 16, 18, 21, 23, 24, 29, 31, 32, 33, 35, 37, 39, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81]
+    },
+    "favorable": {
+      "label": "次吉",
+      "score": 84,
+      "numbers": [17, 25, 30, 38, 49, 51, 55, 58, 71, 73, 75]
+    },
+    "mixed": {
+      "label": "吉凶参半",
+      "score": 65,
+      "numbers": [26, 27, 40, 42, 50, 53, 77, 78, 79]
+    },
+    "caution": {
+      "label": "慎用",
+      "score": 35,
+      "numbers": [2, 4, 9, 10, 12, 14, 19, 20, 22, 28, 34, 36, 43, 44, 46, 54, 56, 59, 60, 62, 64, 66, 69, 70, 72, 74, 76, 80]
+    }
+  },
+  "score_overrides": {
+    "14": 25,
+    "15": 96,
+    "35": 92,
+    "36": 45,
+    "39": 90,
+    "43": 35,
+    "77": 70,
+    "81": 98
+  }
+}

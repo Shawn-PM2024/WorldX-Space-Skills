@@ -1,0 +1,6 @@
+interface:
+  display_name: "易乾坤名称综合评"
+  short_description: "以可解释易学与商业命名规则评估公司、品牌和产品名称"
+  default_prompt: "Use $yi-cosmos-name-evaluator to evaluate this name and explain every score, uncertainty, and evidence gap."
+policy:
+  allow_implicit_invocation: true
